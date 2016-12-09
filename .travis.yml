@@ -11,6 +11,8 @@ services:
   - mysql
 
 before_script:
+  - travis_retry composer self-update
+  - travis_retry composer install --no-interaction
   - wget http://packages.couchbase.com/releases/4.1.0/couchbase-server-community_4.1.0-ubuntu12.04_amd64.deb
   - sudo dpkg -i couchbase-server-community_4.1.0-ubuntu12.04_amd64.deb
   - cd /opt/couchbase
@@ -20,8 +22,6 @@ before_script:
   - ./bin/couchbase-cli bucket-create -c 127.0.0.1:8091 --bucket=test --bucket-type=couchbase --bucket-port=11211 --bucket-ramsize=512  --bucket-replica=1 -u Administrator -p password
   - pecl install couchbase
   - mysql -e 'create database testing;'
-  - travis_retry composer self-update
-  - travis_retry composer install --no-interaction
 
 script:
   - vendor/bin/phpunit
