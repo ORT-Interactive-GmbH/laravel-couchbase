@@ -11,10 +11,13 @@ services:
   - mysql
 
 before_script:
-  - wget http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-2-amd64.deb
-  - sudo dpkg -i couchbase-release-1.0-2-amd64.deb
-  - sudo apt-get update
-  - sudo apt-get install libcouchbase-dev build-essential php-dev
+  - wget http://packages.couchbase.com/releases/4.1.0/couchbase-server-community_4.1.0-ubuntu12.04_amd64.deb
+  - sudo dpkg -i couchbase-server-community_4.1.0-ubuntu12.04_amd64.deb $HOME
+  - cd $HOME/opt/couchbase
+  - ./bin/couchbase-server -- -noinput -detached
+  - sleep 20
+  - ./bin/couchbase-cli cluster-init -c 127.0.0.1:8091  --cluster-init-username=Administrator --cluster-init-password=password --cluster-init-port=8091 --cluster-init-ramsize=1024
+  - ./bin/couchbase-cli bucket-create -c 127.0.0.1:8091 --bucket=test --bucket-type=couchbase --bucket-port=11211 --bucket-ramsize=512  --bucket-replica=1 -u Administrator -p password
   - sudo pecl install couchbase
   - mysql -e 'create database testing;'
   - travis_retry composer self-update
