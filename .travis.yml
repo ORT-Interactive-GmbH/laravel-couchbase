@@ -10,13 +10,6 @@ sudo: required
 services:
   - mysql
 
-addons:
-  apt:
-    sources:
-    - mongodb-3.0-precise
-    packages:
-    - mongodb-org-server
-
 before_script:
   - wget http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-2-amd64.deb
   - sudo dpkg -i couchbase-release-1.0-2-amd64.deb
