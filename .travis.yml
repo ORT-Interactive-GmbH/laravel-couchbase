@@ -11,6 +11,9 @@ services:
   - mysql
 
 before_script:
+  - wget http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-2-amd64.deb
+  - sudo dpkg -i couchbase-release-1.0-2-amd64.deb
+  - sudo apt-get update
   - sudo apt-get install libcouchbase-dev
   - wget http://packages.couchbase.com/releases/4.1.0/couchbase-server-community_4.1.0-ubuntu12.04_amd64.deb
   - sudo dpkg -i couchbase-server-community_4.1.0-ubuntu12.04_amd64.deb
