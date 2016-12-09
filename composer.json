@@ -1,0 +1,35 @@
+{
+    "name": "mpociot/laravel-couchbase",
+    "description": "A Couchbase based Eloquent model and Query builder for Laravel",
+    "keywords": ["laravel","eloquent","couchbase","database","model"],
+    "homepage": "https://github.com/mpociot/laravel-couchbase",
+    "authors": [
+    ],
+    "license" : "MIT",
+    "require": {
+        "illuminate/support": "^5.1",
+        "illuminate/container": "^5.1",
+        "illuminate/database": "^5.1",
+        "illuminate/events": "^5.1",
+        "ext-couchbase": ">=2.2.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.0|^5.0",
+        "orchestra/testbench": "^3.1",
+        "mockery/mockery": "^0.9",
+        "satooshi/php-coveralls": "^0.6"
+    },
+    "autoload": {
+        "psr-0": {
+            "Mpociot\\Couchbase": "src/",
+            "Mpociot\\Eloquent": "src/"
+        }
+    },
+    "autoload-dev": {
+        "classmap": [
+            "tests/TestCase.php",
+            "tests/models",
+            "tests/seeds"
+        ]
+    }
+}

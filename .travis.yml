@@ -1,0 +1,31 @@
+language: php
+
+php:
+  - 5.6
+  - 7
+  - 7.1
+
+sudo: required
+
+services:
+  - mysql
+
+addons:
+  apt:
+    sources:
+    - mongodb-3.0-precise
+    packages:
+    - mongodb-org-server
+
+before_script:
+  - wget http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-2-amd64.deb
+  - sudo dpkg -i couchbase-release-1.0-2-amd64.deb
+  - sudo apt-get update
+  - sudo apt-get install libcouchbase-dev build-essential php-dev
+  - sudo pecl install couchbase
+  - mysql -e 'create database testing;'
+  - travis_retry composer self-update
+  - travis_retry composer install --no-interaction
+
+script:
+  - vendor/bin/phpunit
