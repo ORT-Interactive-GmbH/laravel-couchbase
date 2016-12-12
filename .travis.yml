@@ -23,7 +23,7 @@ before_script:
   - sleep 5
   - ./bin/couchbase-cli cluster-init -c 127.0.0.1:8091  --cluster-username=Administrator --cluster-password=password --cluster-port=8091 --cluster-index-ramsize=512 --cluster-ramsize=512 --services=data,query,index
   - ./bin/couchbase-cli bucket-create -c 127.0.0.1:8091 --bucket=testing --bucket-type=couchbase --bucket-port=11211 --bucket-ramsize=512  --bucket-replica=1 -u Administrator -p password
-  - ./bin/cbq -c 127.0.0.1:8091 --script "CREATE PRIMARY INDEX ON testing USING GSI;"
+  - ./bin/cbq -e http://127.0.0.1:8091 --script "CREATE PRIMARY INDEX ON testing USING GSI;"
   - mysql -e 'create database testing;'
   - pecl install couchbase
   - cd $TRAVIS_BUILD_DIR
