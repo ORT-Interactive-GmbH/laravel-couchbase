@@ -15,14 +15,14 @@ before_script:
   - sudo dpkg -i couchbase-release-1.0-2-amd64.deb
   - sudo apt-get update
   - sudo apt-get install libcouchbase-dev
-  - wget http://packages.couchbase.com/releases/4.1.0/couchbase-server-community_4.1.0-ubuntu12.04_amd64.deb
+  - wget http://packages.couchbase.com/releases/4.6.0-DP/couchbase-server-enterprise_4.6.0-DP-ubuntu12.04_amd64.deb
   - sudo dpkg -i couchbase-server-community_4.1.0-ubuntu12.04_amd64.deb
   - cd /opt/couchbase
   - ./bin/couchbase-server -- -noinput -detached
   - sleep 20
   - ./bin/couchbase-cli cluster-init -c 127.0.0.1:8091  --cluster-init-username=Administrator --cluster-init-password=password --cluster-init-port=8091 --cluster-init-ramsize=1024
   - ./bin/couchbase-cli bucket-create -c 127.0.0.1:8091 --bucket=testing --bucket-type=couchbase --bucket-port=11211 --bucket-ramsize=512  --bucket-replica=1 -u Administrator -p password
-  - ./bin/cbq -v
+  - ./bin/cbq  --script "CREATE PRIMARY INDEX ON testing USING GSI;"
   - mysql -e 'create database testing;'
   - pecl install couchbase
   - cd $TRAVIS_BUILD_DIR
