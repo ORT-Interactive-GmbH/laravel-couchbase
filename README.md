@@ -1,7 +1,6 @@
 Laravel Couchbase
 ===============
 
-[![Latest Stable Version](http://img.shields.io/github/release/mpociot/laravel-couchbase)](https://packagist.org/packages/mpociot/couchbase)
 [![Build Status](http://img.shields.io/travis/mpociot/laravel-couchbase.svg)](https://travis-ci.org/mpociot/laravel-couchbase)
 [![codecov](https://codecov.io/gh/mpociot/laravel-couchbase/branch/master/graph/badge.svg)](https://codecov.io/gh/mpociot/laravel-couchbase)
 
