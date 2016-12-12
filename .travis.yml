@@ -29,7 +29,13 @@ before_script:
   - pecl install couchbase
   - cd $TRAVIS_BUILD_DIR
   - travis_retry composer self-update
-  - travis_retry composer install --no-interaction
+  - travis_retry composer install --prefer-dist --no-interaction
 
 script:
-  - vendor/bin/phpunit
+  - vendor/bin/phpunit --coverage-clover=coverage.xml
+  
+before_install:
+  - pip install --user codecov
+
+after_success:
+  - codecov
