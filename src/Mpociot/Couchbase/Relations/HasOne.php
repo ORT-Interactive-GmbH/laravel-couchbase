@@ -7,6 +7,16 @@ class HasOne extends EloquentHasOne
 {
 
     /**
+     * Get the key for comparing against the parent key in "has" query.
+     *
+     * @return string
+     */
+    public function getHasCompareKey()
+    {
+        return $this->getForeignKeyName();
+    }
+
+    /**
      * Add the constraints for a relationship query.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query
@@ -21,6 +31,26 @@ class HasOne extends EloquentHasOne
         $key = $this->wrap($this->getQualifiedParentKeyName());
 
         return $query->whereNotNull($this->getHasCompareKey());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
+    {
+        $foreignKey = $this->getForeignKeyName();
+
+        return $query->select($foreignKey);
+    }
+
+    /**
+     * Get the key for comparing against the parent key in "has" query.
+     *
+     * @return string
+     */
+    public function getForeignKeyName()
+    {
+        return $this->foreignKey;
     }
 
     /**

@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Mpociot\Couchbase\Query\Builder as QueryBuilder;
 use Mpociot\Couchbase\Relations\EmbedsMany;
 use Mpociot\Couchbase\Relations\EmbedsOne;
+use Illuminate\Support\Str;
 
 abstract class Model extends BaseModel
 {
@@ -448,6 +449,14 @@ abstract class Model extends BaseModel
         }
 
         return $count;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getForeignKey()
+    {
+        return Str::snake(class_basename($this)).'_'.ltrim($this->primaryKey, '_');
     }
 
     /**

@@ -222,11 +222,11 @@ trait HybridRelations
         // name of the calling function. We will use that function name as the
         // title of this relation since that is a great convention to apply.
         if (is_null($relation)) {
-            $relation = $this->getBelongsToManyCaller();
+            $relation = $this->guessBelongsToManyRelation();
         }
 
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, 'Mpociot\Couchbase\Eloquent\Model')) {
+        if (! is_subclass_of($related, \Mpociot\Couchbase\Eloquent\Model::class)) {
             return parent::belongsToMany($related, $collection, $foreignKey, $otherKey, $relation);
         }
 

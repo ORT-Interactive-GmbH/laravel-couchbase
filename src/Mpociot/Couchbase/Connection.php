@@ -108,8 +108,8 @@ class Connection extends \Illuminate\Database\Connection
      */
     public function select($query, $bindings = [], $useReadPdo = true)
     {
-        return $this->run($query, $bindings, function ($me, $query, $bindings) {
-            if ($me->pretending()) {
+        return $this->run($query, $bindings, function ($query, $bindings) {
+            if ($this->pretending()) {
                 return [];
             }
 
@@ -168,8 +168,8 @@ class Connection extends \Illuminate\Database\Connection
      */
     public function affectingStatement($query, $bindings = [])
     {
-        return $this->run($query, $bindings, function ($me, $query, $bindings) {
-            if ($me->pretending()) {
+        return $this->run($query, $bindings, function ($query, $bindings) {
+            if ($this->pretending()) {
                 return 0;
             }
             $query = \CouchbaseN1qlQuery::fromString($query);
@@ -190,8 +190,8 @@ class Connection extends \Illuminate\Database\Connection
      */
     public function positionalStatement($query, array $bindings = [])
     {
-        return $this->run($query, $bindings, function ($me, $query, $bindings) {
-            if ($me->pretending()) {
+        return $this->run($query, $bindings, function ($query, $bindings) {
+            if ($this->pretending()) {
                 return 0;
             }
             $query = CouchbaseN1qlQuery::fromString($query);

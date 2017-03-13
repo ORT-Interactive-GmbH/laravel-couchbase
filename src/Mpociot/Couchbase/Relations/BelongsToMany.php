@@ -1,11 +1,30 @@
 <?php namespace Mpociot\Couchbase\Relations;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 
 class BelongsToMany extends EloquentBelongsToMany
 {
+    /**
+     * Get the key for comparing against the parent key in "has" query.
+     *
+     * @return string
+     */
+    public function getHasCompareKey()
+    {
+        return $this->getForeignKey();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
+    {
+        return $query;
+    }
+
     /**
      * Hydrate the pivot table relationship on the models.
      *
@@ -23,6 +42,14 @@ class BelongsToMany extends EloquentBelongsToMany
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     protected function getSelectColumns(array $columns = ['*'])
+    {
+        return $columns;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function shouldSelect(array $columns = ['*'])
     {
         return $columns;
     }
@@ -121,7 +148,7 @@ class BelongsToMany extends EloquentBelongsToMany
         // First we need to attach any of the associated models that are not currently
         // in this joining table. We'll spin through the given IDs, checking to see
         // if they exist in the array of current ones, and if not we will insert.
-        $current = $this->parent->{$this->otherKey} ?: [];
+        $current = $this->parent->{$this->relatedKey} ?: [];
 
         // See issue #256.
         if ($current instanceof Collection) {
@@ -203,7 +230,7 @@ class BelongsToMany extends EloquentBelongsToMany
         }
 
         // Attach the new ids to the parent model.
-        $this->parent->push($this->otherKey, (array) $id, true);
+        $this->parent->push($this->relatedKey, (array) $id, true);
 
         if ($touch) {
             $this->touchIfTouching();
@@ -230,7 +257,7 @@ class BelongsToMany extends EloquentBelongsToMany
         $ids = (array) $ids;
 
         // Detach all ids from the parent model.
-        $this->parent->pull($this->otherKey, $ids);
+        $this->parent->pull($this->relatedKey, $ids);
 
         // Prepare the query to select all related objects.
         if (count($ids) > 0) {
@@ -293,6 +320,15 @@ class BelongsToMany extends EloquentBelongsToMany
     {
         return $this->related->newQuery();
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQualifiedForeignKeyName()
+    {
+        return $this->foreignKey;
+    }
+
 
     /**
      * Get the fully qualified foreign key for the relation.
