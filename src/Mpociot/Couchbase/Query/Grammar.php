@@ -69,6 +69,31 @@ class Grammar extends BaseGrammar
     }
 
     /**
+     * Compile a "where not in" clause.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  array  $where
+     * @return string
+     */
+    protected function whereNotIn(BaseBuilder $query, $where)
+    {
+        if (empty($where['values'])) {
+            return '0 = 1';
+        }
+
+        $values = $this->parameterize($where['values']);
+
+        if ($where['column'] === '_id') {
+            $column = 'meta('.$query->getConnection()->getBucketName().').id';
+            return $column.' not in ['.$values.']';
+        } else {
+            return $where['column'].' not in ['.$values.']';
+            $colIdentifier = str_random(5);
+            return 'ANY '.$colIdentifier.' IN '.$this->wrap($where['column']).' SATISFIES '.$colIdentifier.' IN ["'.$values.'"]';
+        }
+    }
+
+    /**
      * Compile a "where in" clause.
      *
      * @param  \Illuminate\Database\Query\Builder  $query
