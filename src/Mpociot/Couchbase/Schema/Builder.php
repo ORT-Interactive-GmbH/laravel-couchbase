@@ -13,6 +13,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
+        $this->grammar    = $connection->getSchemaGrammar();
     }
 
     /**
