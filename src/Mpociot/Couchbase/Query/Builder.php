@@ -204,7 +204,15 @@ class Builder extends BaseBuilder
      */
     public function find($id, $columns = ['*'])
     {
-        return $this->where('meta('.$this->connection->getBucketName().').id', '=', $this->convertKey($id))->first($columns);
+        if (is_array($id) === true) {
+            return $this->findMulti($id, $columns);
+        }
+        return $this->raw('USE KEYS '.$id);
+    }
+
+        public function findMulti($id, $columns = ['*'])
+    {
+        return $this->raw('USE KEYS ['.implode(',', $id).']');
     }
 
     /**
