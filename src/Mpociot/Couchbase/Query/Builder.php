@@ -207,12 +207,12 @@ class Builder extends BaseBuilder
         if (is_array($id) === true) {
             return $this->findMulti($id, $columns);
         }
-        return $this->raw('USE KEYS '.$id);
+        return $this->raw('USE KEYS "'.$id.'"');
     }
 
         public function findMulti($id, $columns = ['*'])
     {
-        return $this->raw('USE KEYS ['.implode(',', $id).']');
+        return $this->raw('USE KEYS ["'.implode('","', $id).'"]');
     }
 
     /**
