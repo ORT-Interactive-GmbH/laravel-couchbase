@@ -28,7 +28,7 @@ class Grammar extends BaseGrammar
             return;
         }
 
-        return '"' . str_replace('"', '""', $value) . '"';
+        return '`' . str_replace('"', '""', $value) . '`';
     }
 
     /**
@@ -178,7 +178,7 @@ class Grammar extends BaseGrammar
         $columns = [];
 
         foreach ($values as $key => $value) {
-            $columns[] = $this->wrap($key) . ' = ' . $this->parameter($value);
+            $columns[] = $this->wrapKey($key) . ' = ' . $this->parameter($value);
         }
 
         $columns = implode(', ', $columns);
