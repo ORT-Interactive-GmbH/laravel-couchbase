@@ -6,6 +6,7 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Mpociot\Couchbase\Connection;
+use Mpociot\Couchbase\Helper;
 
 class Builder extends BaseBuilder
 {

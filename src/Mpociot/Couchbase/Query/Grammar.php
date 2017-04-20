@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
 use Illuminate\Database\Query\Builder as BaseBuilder;
+use Mpociot\Couchbase\Helper;
 
 class Grammar extends BaseGrammar
 {

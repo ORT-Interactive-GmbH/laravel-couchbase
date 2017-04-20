@@ -3,6 +3,7 @@
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Mpociot\Couchbase\Helper;
 
 class EmbedsMany extends EmbedsOneOrMany
 {
