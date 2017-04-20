@@ -140,7 +140,7 @@ class Grammar extends BaseGrammar
         $table = $this->wrapTable($query->from);
         // use-keys-clause:
         if (is_null($query->key)) {
-            $query->key(uniqid());
+            $query->key(Helper::getUniqueId($values['_type']));
         }
         $keyClause = $this->wrapKey($query->key);
         // returning-clause

@@ -345,13 +345,13 @@ class Builder extends BaseBuilder
         }
         
         if (is_null($this->key)) {
-            $this->key(uniqid());
+            $this->key(Helper::getUniqueId($this->type));
         }
 
         if ($batch){
             foreach ($values as &$value) {
                 $value['_type'] = $this->type;
-                $key = uniqid();
+                $key = Helper::getUniqueId($this->type);
                 $result = $this->connection->getCouchbaseBucket()->upsert($key, $value);
             }
         } else {
