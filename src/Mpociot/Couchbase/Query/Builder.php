@@ -527,6 +527,11 @@ class Builder extends BaseBuilder
             $this->columns[] = 'meta('.$this->connection->getBucketName().').id as _id';
             $this->columns = array_diff($this->columns, ['_id']);
         }
+        for($i=0; $i<count($this->wheres); $i++) {
+            if (array_key_exists('column', $this->wheres[$i]) === true && $this->wheres[$i]['column'][0] !== '`' && $this->wheres[$i]['column'] == 'build') {
+                $this->wheres[$i]['column'] = '`' . $this->wheres[$i]['column'] . '`';
+            }
+        }
         return parent::runSelect();
     }
 
