@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
 use Illuminate\Database\Query\Builder as BaseBuilder;
+use Mpociot\Couchbase\Helper;
 
 class Grammar extends BaseGrammar
 {
@@ -28,7 +29,7 @@ class Grammar extends BaseGrammar
             return;
         }
 
-        return '"' . str_replace('"', '""', $value) . '"';
+        return '`' . str_replace('"', '""', $value) . '`';
     }
 
     /**
@@ -140,7 +141,7 @@ class Grammar extends BaseGrammar
         $table = $this->wrapTable($query->from);
         // use-keys-clause:
         if (is_null($query->key)) {
-            $query->key(uniqid());
+            $query->key(Helper::getUniqueId($values['_type']));
         }
         $keyClause = $this->wrapKey($query->key);
         // returning-clause
@@ -178,7 +179,7 @@ class Grammar extends BaseGrammar
         $columns = [];
 
         foreach ($values as $key => $value) {
-            $columns[] = $this->wrap($key) . ' = ' . $this->parameter($value);
+            $columns[] = $this->wrapKey($key) . ' = ' . $this->parameter($value);
         }
 
         $columns = implode(', ', $columns);

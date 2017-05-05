@@ -6,6 +6,7 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Mpociot\Couchbase\Connection;
+use Mpociot\Couchbase\Helper;
 
 class Builder extends BaseBuilder
 {
@@ -204,7 +205,15 @@ class Builder extends BaseBuilder
      */
     public function find($id, $columns = ['*'])
     {
-        return $this->where('meta('.$this->connection->getBucketName().').id', '=', $this->convertKey($id))->first($columns);
+        if (is_array($id) === true) {
+            return $this->findMulti($id, $columns);
+        }
+        return $this->raw('USE KEYS "'.$id.'"');
+    }
+
+        public function findMulti($id, $columns = ['*'])
+    {
+        return $this->raw('USE KEYS ["'.implode('","', $id).'"]');
     }
 
     /**
@@ -337,13 +346,13 @@ class Builder extends BaseBuilder
         }
         
         if (is_null($this->key)) {
-            $this->key(uniqid());
+            $this->key(Helper::getUniqueId($this->type));
         }
 
         if ($batch){
             foreach ($values as &$value) {
                 $value['eloquent_type'] = $this->type;
-                $key = uniqid();
+                $key = Helper::getUniqueId($this->type);
                 $result = $this->connection->getCouchbaseBucket()->upsert($key, $value);
             }
         } else {
@@ -517,6 +526,11 @@ class Builder extends BaseBuilder
         if ($this->columns === [$this->connection->getBucketName().'.*'] || in_array('_id', $this->columns)) {
             $this->columns[] = 'meta('.$this->connection->getBucketName().').id as _id';
             $this->columns = array_diff($this->columns, ['_id']);
+        }
+        for($i=0; $i<count($this->wheres); $i++) {
+            if (array_key_exists('column', $this->wheres[$i]) === true && $this->wheres[$i]['column'][0] !== '`' && $this->wheres[$i]['column'] == 'build') {
+                $this->wheres[$i]['column'] = '`' . $this->wheres[$i]['column'] . '`';
+            }
         }
         return parent::runSelect();
     }
