@@ -152,7 +152,7 @@ class Builder extends BaseBuilder
         $this->from = $this->connection->getBucketName();
         $this->type = $type;
 
-        $this->where('_type', $type);
+        $this->where('eloquent_type', $type);
         return $this;
     }
 
@@ -342,12 +342,12 @@ class Builder extends BaseBuilder
 
         if ($batch){
             foreach ($values as &$value) {
-                $value['_type'] = $this->type;
+                $value['eloquent_type'] = $this->type;
                 $key = uniqid();
                 $result = $this->connection->getCouchbaseBucket()->upsert($key, $value);
             }
         } else {
-            $values['_type'] = $this->type;
+            $values['eloquent_type'] = $this->type;
             $result = $this->connection->getCouchbaseBucket()->upsert($this->key, $values);
         }
 
@@ -591,7 +591,7 @@ class Builder extends BaseBuilder
     protected function detectValues($values)
     {
         foreach ($values as &$value) {
-            $value['_type'] = $this->type;
+            $value['eloquent_type'] = $this->type;
         }
         return [$values];
     }
