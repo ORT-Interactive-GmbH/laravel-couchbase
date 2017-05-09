@@ -223,7 +223,7 @@ class BelongsToMany extends EloquentBelongsToMany
 
             foreach ((array)$id as $_id) {
                 $query = $this->newRelatedQuery();
-                $query->key($_id);
+                $query->useKeys($_id);
                 // Attach the new parent id to the related model.
                 $query->push($this->foreignKey, $this->parent->getKey(), true);
             }

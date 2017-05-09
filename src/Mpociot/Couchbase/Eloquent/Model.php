@@ -58,6 +58,16 @@ abstract class Model extends BaseModel
     {
         return $this->getKeyName();
     }
+    
+    /**
+     * Get the primary key for the model.
+     *
+     * @return string
+     */
+    public final function getKeyName()
+    {
+        return '_id';
+    }
 
     /**
      * Define an embedded one-to-many relationship.

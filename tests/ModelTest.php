@@ -328,7 +328,10 @@ class ModelTest extends TestCase
         $this->assertTrue(is_string($array['updated_at']));
         $this->assertTrue(is_string($array['_id']));
     }
-
+    
+    /**
+     * @group testUnset
+     */
     public function testUnset()
     {
         $user1 = User::create(['name' => 'John Doe', 'note1' => 'ABC', 'note2' => 'DEF']);
@@ -342,8 +345,8 @@ class ModelTest extends TestCase
         $this->assertTrue(isset($user2->note2));
 
         // Re-fetch to be sure
-        $user1 = User::find($user1->_id);
-        $user2 = User::find($user2->_id);
+        $user1 = User::find($user1->getKey());
+        $user2 = User::find($user2->getKey());
 
         $this->assertFalse(isset($user1->note1));
         $this->assertTrue(isset($user1->note2));
@@ -351,7 +354,18 @@ class ModelTest extends TestCase
         $this->assertTrue(isset($user2->note2));
 
         $user2->unset(['note1', 'note2']);
-
+    
+        $this->assertFalse(isset($user1->note1));
+        $this->assertTrue(isset($user1->note2));
+        $this->assertFalse(isset($user2->note1));
+        $this->assertFalse(isset($user2->note2));
+    
+        // Re-fetch to be sure
+        $user1 = User::find($user1->getKey());
+        $user2 = User::find($user2->getKey());
+    
+        $this->assertFalse(isset($user1->note1));
+        $this->assertTrue(isset($user1->note2));
         $this->assertFalse(isset($user2->note1));
         $this->assertFalse(isset($user2->note2));
     }

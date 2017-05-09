@@ -6,6 +6,201 @@ use Mpociot\Couchbase\Helper;
 
 class Grammar extends BaseGrammar
 {
+    protected $reservedWords = [
+        'ALL',
+        'ALTER',
+        'ANALYZE',
+        'AND',
+        'ANY',
+        'ARRAY',
+        'AS',
+        'ASC',
+        'BEGIN',
+        'BETWEEN',
+        'BINARY',
+        'BOOLEAN',
+        'BREAK',
+        'BUCKET',
+        'BUILD',
+        'BY',
+        'CALL',
+        'CASE',
+        'CAST',
+        'CLUSTER',
+        'COLLATE',
+        'COLLECTION',
+        'COMMIT',
+        'CONNECT',
+        'CONTINUE',
+        'CORRELATE',
+        'COVER',
+        'CREATE',
+        'DATABASE',
+        'DATASET',
+        'DATASTORE',
+        'DECLARE',
+        'DECREMENT',
+        'DELETE',
+        'DERIVED',
+        'DESC',
+        'DESCRIBE',
+        'DISTINCT',
+        'DO',
+        'DROP',
+        'EACH',
+        'ELEMENT',
+        'ELSE',
+        'END',
+        'EVERY',
+        'EXCEPT',
+        'EXCLUDE',
+        'EXECUTE',
+        'EXISTS',
+        'EXPLAIN',
+        'FALSE',
+        'FETCH',
+        'FIRST',
+        'FLATTEN',
+        'FOR',
+        'FORCE',
+        'FROM',
+        'FUNCTION',
+        'GRANT',
+        'GROUP',
+        'GSI',
+        'HAVING',
+        'IF',
+        'IGNORE',
+        'ILIKE',
+        'IN',
+        'INCLUDE',
+        'INCREMENT',
+        'INDEX',
+        'INFER',
+        'INLINE',
+        'INNER',
+        'INSERT',
+        'INTERSECT',
+        'INTO',
+        'IS',
+        'JOIN',
+        'KEY',
+        'KEYS',
+        'KEYSPACE',
+        'KNOWN',
+        'LAST',
+        'LEFT',
+        'LET',
+        'LETTING',
+        'LIKE',
+        'LIMIT',
+        'LSM',
+        'MAP',
+        'MAPPING',
+        'MATCHED',
+        'MATERIALIZED',
+        'MERGE',
+        'MINUS',
+        'MISSING',
+        'NAMESPACE',
+        'NEST',
+        'NOT',
+        'NULL',
+        'NUMBER',
+        'OBJECT',
+        'OFFSET',
+        'ON',
+        'OPTION',
+        'OR',
+        'ORDER',
+        'OUTER',
+        'OVER',
+        'PARSE',
+        'PARTITION',
+        'PASSWORD',
+        'PATH',
+        'POOL',
+        'PREPARE',
+        'PRIMARY',
+        'PRIVATE',
+        'PRIVILEGE',
+        'PROCEDURE',
+        'PUBLIC',
+        'RAW',
+        'REALM',
+        'REDUCE',
+        'RENAME',
+        'RETURN',
+        'RETURNING',
+        'REVOKE',
+        'RIGHT',
+        'ROLE',
+        'ROLLBACK',
+        'SATISFIES',
+        'SCHEMA',
+        'SELECT',
+        'SELF',
+        'SEMI',
+        'SET',
+        'SHOW',
+        'SOME',
+        'START',
+        'STATISTICS',
+        'STRING',
+        'SYSTEM',
+        'THEN',
+        'TO',
+        'TRANSACTION',
+        'TRIGGER',
+        'TRUE',
+        'TRUNCATE',
+        'UNDER',
+        'UNION',
+        'UNIQUE',
+        'UNKNOWN',
+        'UNNEST',
+        'UNSET',
+        'UPDATE',
+        'UPSERT',
+        'USE',
+        'USER',
+        'USING',
+        'VALIDATE',
+        'VALUE',
+        'VALUED',
+        'VALUES',
+        'VIA',
+        'VIEW',
+        'WHEN',
+        'WHERE',
+        'WHILE',
+        'WITH',
+        'WITHIN',
+        'WORK',
+        'XOR'
+    ];
+    
+    /**
+     * The components that make up a select clause.
+     *
+     * @var array
+     */
+    protected $selectComponents = [
+        'aggregate',
+        'columns',
+        'from',
+        'joins',
+        'keys',
+        'wheres',
+        'groups',
+        'havings',
+        'orders',
+        'limit',
+        'offset',
+        'unions',
+        'lock',
+    ];
+    
     /**
      * {@inheritdoc}
      */
@@ -28,8 +223,12 @@ class Grammar extends BaseGrammar
         if (is_null($value)) {
             return;
         }
-
-        return '`' . str_replace('"', '""', $value) . '`';
+        
+        if(in_array(strtoupper($value), $this->reservedWords)) {
+            return '`' . str_replace('"', '""', $value) . '`';
+        }
+    
+        return $value;
     }
 
     /**
@@ -117,6 +316,8 @@ class Grammar extends BaseGrammar
     {
         // keyspace-ref:
         $table = $this->wrapTable($query->from);
+        // use-keys-clause:
+        $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
         // returning-clause
         $returning = implode(', ', $query->returning);
 
@@ -129,7 +330,7 @@ class Grammar extends BaseGrammar
         $columns = implode(', ', $columns);
 
         $where = $this->compileWheres($query);
-        return trim("update {$table} unset $columns $where RETURNING {$returning}");
+        return trim("update {$table} {$keyClause} unset $columns $where RETURNING {$returning}");
     }
 
     /**
@@ -140,10 +341,11 @@ class Grammar extends BaseGrammar
         // keyspace-ref:
         $table = $this->wrapTable($query->from);
         // use-keys-clause:
-        if (is_null($query->key)) {
-            $query->key(Helper::getUniqueId($values['_type']));
+        if (is_null($query->keys)) {
+            $query->useKeys(Helper::getUniqueId($values['_type']));
         }
-        $keyClause = $this->wrapKey($query->key);
+        // use-keys-clause:
+        $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
         // returning-clause
         $returning = implode(', ', $query->returning);
 
@@ -173,6 +375,8 @@ class Grammar extends BaseGrammar
     {
         // keyspace-ref:
         $table = $this->wrapTable($query->from);
+        // use-keys-clause:
+        $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
         // returning-clause
         $returning = implode(', ', $query->returning);
 
@@ -194,9 +398,9 @@ class Grammar extends BaseGrammar
         }
         $forIns = implode(', ', $forIns);
 
-        return trim("update {$table} set $columns $forIns $where RETURNING {$returning}");
+        return trim("update {$table} $keyClause set $columns $forIns $where RETURNING {$returning}");
     }
-
+    
     /**
      * {@inheritdoc}
      *
@@ -207,15 +411,23 @@ class Grammar extends BaseGrammar
         // keyspace-ref:
         $table = $this->wrapTable($query->from);
         // use-keys-clause:
-        $keyClause = null;
-        if ($query->key) {
-            $key = $this->wrapKey($query->key);
-            $keyClause = "USE KEYS {$key}";
-        }
+        $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
         // returning-clause
         $returning = implode(', ', $query->returning);
         $where = is_array($query->wheres) ? $this->compileWheres($query) : '';
-
+        
         return trim("delete from {$table} {$keyClause} {$where} RETURNING {$returning}");
+    }
+    
+    /**
+     * @param BaseBuilder $query
+     * @return string
+     */
+    public function compileKeys(BaseBuilder $query)
+    {
+        if(is_array($query->keys)) {
+            return 'USE KEYS [\''.implode('\', \'', $query->keys).'\']';
+        }
+        return 'USE KEYS \''.$query->keys.'\'';
     }
 }
