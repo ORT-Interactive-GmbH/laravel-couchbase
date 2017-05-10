@@ -224,7 +224,7 @@ class Grammar extends BaseGrammar
             return;
         }
         
-        if(in_array(strtoupper($value), $this->reservedWords)) {
+        if(in_array(strtoupper($value), $this->reservedWords) || preg_match('/\s/', $value)) {
             return '`' . str_replace('"', '""', $value) . '`';
         }
     
@@ -426,6 +426,9 @@ class Grammar extends BaseGrammar
     public function compileKeys(BaseBuilder $query)
     {
         if(is_array($query->keys)) {
+            if(empty($query->keys)) {
+                return 'USE KEYS []';
+            }
             return 'USE KEYS [\''.implode('\', \'', $query->keys).'\']';
         }
         return 'USE KEYS \''.$query->keys.'\'';

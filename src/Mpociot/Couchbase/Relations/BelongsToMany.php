@@ -263,7 +263,7 @@ class BelongsToMany extends EloquentBelongsToMany
         if (count($ids) > 0) {
             foreach ($ids as $id) {
                 $model = $this->related->newQuery();
-                $model->key($id);
+                $model->useKeys($id);
                 // Remove the relation to the parent.
                 $model->pull($this->foreignKey, $this->parent->getKey());
             }

@@ -1,7 +1,5 @@
 <?php
     
-    use DB;
-    
     class ConnectionTest extends TestCase
     {
         public function testConnection()
@@ -10,20 +8,25 @@
             $this->assertInstanceOf('Mpociot\Couchbase\Connection', $connection);
         }
     
+        /**
+         * @group testReconnect
+         */
         public function testReconnect()
         {
             /** @var \Mpociot\Couchbase\Connection $c1 */
             /** @var \Mpociot\Couchbase\Connection $c2 */
             $c1 = DB::connection('couchbase');
+            $hash1 = spl_object_hash($c1->getCouchbaseCluster());
             $c2 = DB::connection('couchbase');
-            $this->assertEquals(spl_object_hash($c1->getCouchbaseBucket()), spl_object_hash($c2->getCouchbaseBucket()));
-            $this->assertEquals(spl_object_hash($c1), spl_object_hash($c2));
+            $hash2 = spl_object_hash($c2->getCouchbaseCluster());
+            $this->assertEquals($hash1, $hash2);
     
             $c1 = DB::connection('couchbase');
-            DB::purge('couchbase');
+            $hash1 = spl_object_hash($c1->getCouchbaseCluster());
+            $c1->reconnect();
             $c2 = DB::connection('couchbase');
-            $this->assertNotEquals(spl_object_hash($c1->getCouchbaseBucket()), spl_object_hash($c2->getCouchbaseBucket()));
-            $this->assertNotEquals(spl_object_hash($c1), spl_object_hash($c2));
+            $hash2 = spl_object_hash($c2->getCouchbaseCluster());
+            $this->assertNotEquals($hash1, $hash2);
         }
     
         public function testDb()

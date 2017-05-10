@@ -284,25 +284,53 @@ class ModelTest extends TestCase
         $user->restore();
         $this->assertEquals(2, Soft::count());
     }
-
+    
+    /**
+     * @group testPrimaryKey
+     */
     public function testPrimaryKey()
     {
         $user = new User;
         $this->assertEquals('_id', $user->getKeyName());
-
+        
         $book = new Book;
         $this->assertEquals('title', $book->getKeyName());
-
+        
         $book->title = 'A Game of Thrones';
         $book->author = 'George R. R. Martin';
         $book->save();
-
+        
         $this->assertEquals('A Game of Thrones', $book->getKey());
-
+        
         $check = Book::find('A Game of Thrones');
         $this->assertEquals('title', $check->getKeyName());
         $this->assertEquals('A Game of Thrones', $check->getKey());
         $this->assertEquals('A Game of Thrones', $check->title);
+    }
+    
+    /**
+     * @group testPrimaryKeyUsingWhere
+     */
+    public function testPrimaryKeyUsingWhere()
+    {
+        $book = new Book;
+        $this->assertEquals('title', $book->getKeyName());
+        
+        $book->title = 'A Game of Thrones Where';
+        $book->author = 'George R. R. Martin Where';
+        $book->save();
+        
+        $this->assertEquals('A Game of Thrones Where', $book->getKey());
+        
+        $check = Book::where('_id', 'A Game of Thrones Where');
+        $this->assertEquals('title', $check->getKeyName());
+        $this->assertEquals('A Game of Thrones Where', $check->getKey());
+        $this->assertEquals('A Game of Thrones Where', $check->title);
+    
+        $check = Book::where('title', 'A Game of Thrones Where2');
+        $this->assertEquals('title', $check->getKeyName());
+        $this->assertEquals('A Game of Thrones Where2', $check->getKey());
+        $this->assertEquals('A Game of Thrones Where2', $check->title);
     }
 
     public function testScope()

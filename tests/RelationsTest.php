@@ -35,7 +35,11 @@ class RelationsTest extends TestCase
         $items = $user->items;
         $this->assertEquals(3, count($items));
     }
-
+    
+    /**
+     * @group RelationsTest
+     * @group testBelongsTo
+     */
     public function testBelongsTo()
     {
         $user = User::create(['name' => 'George R. R. Martin']);
@@ -52,6 +56,7 @@ class RelationsTest extends TestCase
         $this->assertEquals('John Doe', $owner->name);
 
         $book = Book::create(['title' => 'A Clash of Kings']);
+        
         $this->assertEquals(null, $book->author);
     }
 

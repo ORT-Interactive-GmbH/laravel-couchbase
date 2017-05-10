@@ -112,6 +112,9 @@ class Builder extends BaseBuilder
      */
     public function useKeys($keys)
     {
+        if(is_null($keys)) {
+            $keys = [];
+        }
         $this->keys = $keys;
 
         return $this;
