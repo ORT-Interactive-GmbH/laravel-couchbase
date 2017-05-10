@@ -57,7 +57,7 @@ class Connection extends \Illuminate\Database\Connection
 
         $this->useDefaultSchemaGrammar();
     }
-
+    
     /**
      * Get the default post processor instance.
      *

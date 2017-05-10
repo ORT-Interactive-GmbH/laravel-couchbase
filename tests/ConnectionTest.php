@@ -13,19 +13,27 @@
          */
         public function testReconnect()
         {
+            $this->markTestSkipped('Reconnect is currently not required.');
+            
             /** @var \Mpociot\Couchbase\Connection $c1 */
             /** @var \Mpociot\Couchbase\Connection $c2 */
             $c1 = DB::connection('couchbase');
+            $requiredReference = $c1->getCouchbaseCluster();
+            // $requiredReference is required because of spl_object_hash(): Once the object is destroyed, its hash may be reused for other objects.
             $hash1 = spl_object_hash($c1->getCouchbaseCluster());
             $c2 = DB::connection('couchbase');
             $hash2 = spl_object_hash($c2->getCouchbaseCluster());
+            $this->assertEquals(spl_object_hash($c1), spl_object_hash($c2));
             $this->assertEquals($hash1, $hash2);
     
             $c1 = DB::connection('couchbase');
+            $requiredReference = $c1->getCouchbaseCluster();
+            // $requiredReference is required because of spl_object_hash(): Once the object is destroyed, its hash may be reused for other objects.
             $hash1 = spl_object_hash($c1->getCouchbaseCluster());
-            $c1->reconnect();
+            DB::purge('couchbase');
             $c2 = DB::connection('couchbase');
             $hash2 = spl_object_hash($c2->getCouchbaseCluster());
+            $this->assertEquals(spl_object_hash($c1), spl_object_hash($c2));
             $this->assertNotEquals($hash1, $hash2);
         }
     
