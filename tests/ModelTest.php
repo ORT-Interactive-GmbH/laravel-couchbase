@@ -314,23 +314,27 @@ class ModelTest extends TestCase
     public function testPrimaryKeyUsingWhere()
     {
         $book = new Book;
-        $this->assertEquals('title', $book->getKeyName());
+        $book->title = 'False Book';
+        $book->save();
         
+        $book = new Book;
+        $this->assertEquals('title', $book->getKeyName());
+    
         $book->title = 'A Game of Thrones Where';
         $book->author = 'George R. R. Martin Where';
         $book->save();
         
         $this->assertEquals('A Game of Thrones Where', $book->getKey());
         
-        $check = Book::where('_id', 'A Game of Thrones Where');
+        $check = Book::where('_id', 'A Game of Thrones Where')->first();
         $this->assertEquals('title', $check->getKeyName());
         $this->assertEquals('A Game of Thrones Where', $check->getKey());
         $this->assertEquals('A Game of Thrones Where', $check->title);
     
-        $check = Book::where('title', 'A Game of Thrones Where2');
+        $check = Book::where('title', 'A Game of Thrones Where')->first();
         $this->assertEquals('title', $check->getKeyName());
-        $this->assertEquals('A Game of Thrones Where2', $check->getKey());
-        $this->assertEquals('A Game of Thrones Where2', $check->title);
+        $this->assertEquals('A Game of Thrones Where', $check->getKey());
+        $this->assertEquals('A Game of Thrones Where', $check->title);
     }
 
     public function testScope()
