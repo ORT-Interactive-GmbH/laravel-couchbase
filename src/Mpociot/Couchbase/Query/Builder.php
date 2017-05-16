@@ -169,7 +169,7 @@ class Builder extends BaseBuilder
     public function forNestedWhere()
     {
         // ->from($this->from) is wrong, and ->from($this->type) is redundant in nested where
-        return $this->newQuery();
+        return $this->newQuery()->from(null);
     }
 
     /**
