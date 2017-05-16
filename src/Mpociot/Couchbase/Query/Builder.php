@@ -156,9 +156,22 @@ class Builder extends BaseBuilder
     {
         $this->from = $this->connection->getBucketName();
         $this->type = $type;
-
-        $this->where('eloquent_type', $type);
+        
+        if(!is_null($type)) {
+            $this->where( 'eloquent_type', $type );
+        }
         return $this;
+    }
+    
+    /**
+     * Create a new query instance for nested where condition.
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function forNestedWhere()
+    {
+        // ->from($this->from) is wrong, and ->from($this->type) is redundant in nested where
+        return $this->newQuery()->from(null);
     }
 
     /**
