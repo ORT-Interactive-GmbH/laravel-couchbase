@@ -157,7 +157,9 @@ class Builder extends BaseBuilder
         $this->from = $this->connection->getBucketName();
         $this->type = $type;
         
-        $this->where('eloquent_type', $type);
+        if(!is_null($type)) {
+            $this->where( 'eloquent_type', $type );
+        }
         return $this;
     }
     
