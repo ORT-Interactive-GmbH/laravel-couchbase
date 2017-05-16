@@ -1,8 +1,6 @@
 <?php namespace Mpociot\Couchbase\Query;
 
-use Closure;
 use Illuminate\Database\Query\Builder as BaseBuilder;
-use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Mpociot\Couchbase\Connection;
@@ -83,8 +81,11 @@ class Builder extends BaseBuilder
      */
     protected $useCollections;
 
-    /** @var string  use-keys-clause */
-    public $key;
+    /**
+     * Keys used via 'USE KEYS'
+     * @var null|array|string
+     */
+    public $keys = null;
 
     /** @var string[]  returning-clause */
     public $returning = ['*'];
@@ -105,13 +106,16 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param $key
+     * @param $keys
      *
      * @return $this
      */
-    public function key($key)
+    public function useKeys($keys)
     {
-        $this->key = $key;
+        if(is_null($keys)) {
+            $keys = [];
+        }
+        $this->keys = $keys;
 
         return $this;
     }
@@ -201,19 +205,14 @@ class Builder extends BaseBuilder
      *
      * @param  mixed  $id
      * @param  array  $columns
-     * @return mixed
+     * @return mixed|static
      */
     public function find($id, $columns = ['*'])
     {
         if (is_array($id) === true) {
-            return $this->findMulti($id, $columns);
+            return $this->useKeys($id);
         }
-        return $this->raw('USE KEYS "'.$id.'"');
-    }
-
-        public function findMulti($id, $columns = ['*'])
-    {
-        return $this->raw('USE KEYS ["'.implode('","', $id).'"]');
+        return $this->useKeys($id)->first();
     }
 
     /**
@@ -345,8 +344,8 @@ class Builder extends BaseBuilder
             }
         }
         
-        if (is_null($this->key)) {
-            $this->key(Helper::getUniqueId($this->type));
+        if (is_null($this->keys)) {
+            $this->useKeys(Helper::getUniqueId($this->type));
         }
 
         if ($batch){
@@ -357,7 +356,7 @@ class Builder extends BaseBuilder
             }
         } else {
             $values['eloquent_type'] = $this->type;
-            $result = $this->connection->getCouchbaseBucket()->upsert($this->key, $values);
+            $result = $this->connection->getCouchbaseBucket()->upsert($this->keys, $values);
         }
 
         return $result;
@@ -373,12 +372,12 @@ class Builder extends BaseBuilder
     public function insertGetId(array $values, $sequence = NULL)
     {
         if (!is_null($sequence) && isset($values[$sequence])){
-            $this->key((string)$values[$sequence]);
+            $this->useKeys((string)$values[ $sequence]);
         } elseif (isset($values['_id'])) {
-            $this->key((string)$values['_id']);
+            $this->useKeys((string)$values[ '_id']);
         }
         $this->insert($values);
-        return $this->key;
+        return $this->keys;
     }
 
     /**
@@ -434,7 +433,7 @@ class Builder extends BaseBuilder
      */
     public function push($column, $value = null, $unique = false)
     {
-        $obj = $this->connection->getCouchbaseBucket()->get($this->key);
+        $obj = $this->connection->getCouchbaseBucket()->get($this->keys);
         if (!isset($obj->value->{$column})) {
             $obj->value->{$column} = [];
         }
@@ -448,7 +447,7 @@ class Builder extends BaseBuilder
         $array = array_unique($array);
         $obj->value->{$column} = array_map('json_decode', $array);
 
-        return $this->connection->getCouchbaseBucket()->upsert($this->key, $obj->value);
+        return $this->connection->getCouchbaseBucket()->upsert($this->keys, $obj->value);
     }
 
     /**
@@ -461,7 +460,7 @@ class Builder extends BaseBuilder
     public function pull($column, $value = null)
     {
         try {
-            $obj = $this->connection->getCouchbaseBucket()->get($this->key);
+            $obj = $this->connection->getCouchbaseBucket()->get($this->keys);
             if (!is_array($value)) {
                 $value = [$value];
             }
@@ -481,7 +480,7 @@ class Builder extends BaseBuilder
             });
             $obj->value->{$column} = $filtered->flatten()->toArray();
 
-            return $this->connection->getCouchbaseBucket()->upsert($this->key, $obj->value);
+            return $this->connection->getCouchbaseBucket()->upsert($this->keys, $obj->value);
         } catch (\Exception $e) {
 
         }
@@ -578,8 +577,10 @@ class Builder extends BaseBuilder
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
         if ($column === '_id') {
-            $column = 'meta('.$this->connection->getBucketName().').id';
-            $this->key($value);
+            //$column = 'meta('.$this->connection->getBucketName().').id';
+            $value = func_num_args() == 2 ? $operator : $value;
+            $this->useKeys($value);
+            return $this;
         }
         return parent::where($column, $operator, $value, $boolean);
     }

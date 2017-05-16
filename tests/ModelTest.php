@@ -284,25 +284,57 @@ class ModelTest extends TestCase
         $user->restore();
         $this->assertEquals(2, Soft::count());
     }
-
+    
+    /**
+     * @group testPrimaryKey
+     */
     public function testPrimaryKey()
     {
         $user = new User;
         $this->assertEquals('_id', $user->getKeyName());
-
+        
         $book = new Book;
         $this->assertEquals('title', $book->getKeyName());
-
+        
         $book->title = 'A Game of Thrones';
         $book->author = 'George R. R. Martin';
         $book->save();
-
+        
         $this->assertEquals('A Game of Thrones', $book->getKey());
-
+        
         $check = Book::find('A Game of Thrones');
         $this->assertEquals('title', $check->getKeyName());
         $this->assertEquals('A Game of Thrones', $check->getKey());
         $this->assertEquals('A Game of Thrones', $check->title);
+    }
+    
+    /**
+     * @group testPrimaryKeyUsingWhere
+     */
+    public function testPrimaryKeyUsingWhere()
+    {
+        $book = new Book;
+        $book->title = 'False Book';
+        $book->save();
+        
+        $book = new Book;
+        $this->assertEquals('title', $book->getKeyName());
+    
+        $book->title = 'A Game of Thrones Where';
+        $book->author = 'George R. R. Martin Where';
+        $book->save();
+        
+        $this->assertEquals('A Game of Thrones Where', $book->getKey());
+        
+        $check = Book::where('_id', 'A Game of Thrones Where')->first();
+        $this->assertEquals('title', $check->getKeyName());
+        $this->assertEquals('A Game of Thrones Where', $check->getKey());
+        $this->assertEquals('A Game of Thrones Where', $check->title);
+    
+        $check = Book::where('title', 'A Game of Thrones Where')->first();
+        $this->assertEquals('title', $check->getKeyName());
+        $this->assertEquals('A Game of Thrones Where', $check->getKey());
+        $this->assertEquals('A Game of Thrones Where', $check->title);
     }
 
     public function testScope()
@@ -328,7 +360,10 @@ class ModelTest extends TestCase
         $this->assertTrue(is_string($array['updated_at']));
         $this->assertTrue(is_string($array['_id']));
     }
-
+    
+    /**
+     * @group testUnset
+     */
     public function testUnset()
     {
         $user1 = User::create(['name' => 'John Doe', 'note1' => 'ABC', 'note2' => 'DEF']);
@@ -342,8 +377,8 @@ class ModelTest extends TestCase
         $this->assertTrue(isset($user2->note2));
 
         // Re-fetch to be sure
-        $user1 = User::find($user1->_id);
-        $user2 = User::find($user2->_id);
+        $user1 = User::find($user1->getKey());
+        $user2 = User::find($user2->getKey());
 
         $this->assertFalse(isset($user1->note1));
         $this->assertTrue(isset($user1->note2));
@@ -351,7 +386,18 @@ class ModelTest extends TestCase
         $this->assertTrue(isset($user2->note2));
 
         $user2->unset(['note1', 'note2']);
-
+    
+        $this->assertFalse(isset($user1->note1));
+        $this->assertTrue(isset($user1->note2));
+        $this->assertFalse(isset($user2->note1));
+        $this->assertFalse(isset($user2->note2));
+    
+        // Re-fetch to be sure
+        $user1 = User::find($user1->getKey());
+        $user2 = User::find($user2->getKey());
+    
+        $this->assertFalse(isset($user1->note1));
+        $this->assertTrue(isset($user1->note2));
         $this->assertFalse(isset($user2->note1));
         $this->assertFalse(isset($user2->note2));
     }

@@ -151,6 +151,38 @@ class Builder extends EloquentBuilder
 
         return parent::decrement($column, $amount, $extra);
     }
+    
+    /**
+     * Add a where clause on the primary key to the query.
+     *
+     * @param  mixed  $id
+     * @return $this
+     */
+    public function whereKey($id)
+    {
+        $this->query->useKeys($id);
+            
+        return $this;
+    }
+    
+    /**
+     * Add a basic where clause to the query.
+     *
+     * @param  string|\Closure  $column
+     * @param  string  $operator
+     * @param  mixed  $value
+     * @param  string  $boolean
+     * @return $this
+     */
+    public function where($column, $operator = null, $value = null, $boolean = 'and')
+    {
+        if($column === $this->model->getKeyName() || $column === '_id') {
+            $value = func_num_args() == 2 ? $operator : $value;
+            $this->whereKey($value);
+            return $this;
+        }
+        return parent::where($column, $operator, $value, $boolean);
+    }
 
     /**
      * Add the "has" condition where clause to the query.

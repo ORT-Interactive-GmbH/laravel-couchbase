@@ -45,11 +45,11 @@ class Connection extends \Illuminate\Database\Connection
 
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config);
-
+        
         // Select database
         $this->bucketname = $config['bucket'];
         $this->bucket = $this->connection->openBucket($this->bucketname);
-
+        
         // Enable N1QL for bucket
         $this->bucket->enableN1ql($config['n1ql_hosts']);
 
@@ -57,7 +57,7 @@ class Connection extends \Illuminate\Database\Connection
 
         $this->useDefaultSchemaGrammar();
     }
-
+    
     /**
      * Get the default post processor instance.
      *
