@@ -58,7 +58,7 @@ abstract class Model extends BaseModel
     {
         return $this->getKeyName();
     }
-    
+
     /**
      * Get the primary key for the model.
      *
@@ -170,7 +170,7 @@ abstract class Model extends BaseModel
         if (! $key) {
             return;
         }
-        
+
         if($key === $this->primaryKey && $key !== '_id') {
             $key = '_id';
         }
@@ -219,7 +219,7 @@ abstract class Model extends BaseModel
         if($key === $this->primaryKey && $key !== '_id') {
             $key = '_id';
         }
-        
+
         // Support keys in dot notation.
         if (str_contains($key, '.')) {
             if (in_array($key, $this->getDates()) && $value) {
@@ -426,7 +426,7 @@ abstract class Model extends BaseModel
 
         return new QueryBuilder($connection, $connection->getPostProcessor());
     }
-    
+
     /**
      * We just return original key here in order to support keys in dot-notation
      *
@@ -459,7 +459,7 @@ abstract class Model extends BaseModel
         // each of them individually so that their events get fired properly with a
         // correct set of attributes in case the developers wants to check these.
         $key = $instance->getKeyName();
-        
+
         foreach ($instance->whereIn($key, $ids)->get() as $model) {
             if ($model->delete()) {
                 $count++;
@@ -492,5 +492,21 @@ abstract class Model extends BaseModel
         }
 
         return parent::__call($method, $parameters);
+    }
+
+    /**
+     * Overrides the default 'getKey' Method.
+     * You can trigger now to remove the :: from the couchbase id
+     *
+     * @param bool $removeColons
+     * @return string
+     */
+    public function getKey(bool $removeColons = false) : string
+    {
+        $key = $this->getAttribute($this->getKeyName());
+        if ($removeColons === true) {
+            $key = str_replace('::', '', $key);
+        }
+        return $key;
     }
 }
