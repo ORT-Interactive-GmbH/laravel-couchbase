@@ -501,7 +501,7 @@ abstract class Model extends BaseModel
      * @param bool $removeColons
      * @return string
      */
-    public function getKey(bool $removeColons = false) : string
+    public function getKey(bool $removeColons = false)
     {
         $key = $this->getAttribute($this->getKeyName());
         if ($removeColons === true) {
