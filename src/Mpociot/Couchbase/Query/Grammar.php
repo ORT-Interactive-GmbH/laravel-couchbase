@@ -179,7 +179,7 @@ class Grammar extends BaseGrammar
         'WORK',
         'XOR'
     ];
-    
+
     /**
      * The components that make up a select clause.
      *
@@ -200,7 +200,7 @@ class Grammar extends BaseGrammar
         'unions',
         'lock',
     ];
-    
+
     /**
      * {@inheritdoc}
      */
@@ -223,11 +223,11 @@ class Grammar extends BaseGrammar
         if (is_null($value)) {
             return;
         }
-        
+
         if(in_array(strtoupper($value), $this->reservedWords) || preg_match('/\s/', $value)) {
             return '`' . str_replace('"', '""', $value) . '`';
         }
-    
+
         return $value;
     }
 
@@ -342,7 +342,7 @@ class Grammar extends BaseGrammar
         $table = $this->wrapTable($query->from);
         // use-keys-clause:
         if (is_null($query->keys)) {
-            $query->useKeys(Helper::getUniqueId($values['_type']));
+            $query->useKeys(Helper::getUniqueId($values[Helper::TYPE_NAME]));
         }
         // use-keys-clause:
         $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
@@ -400,7 +400,7 @@ class Grammar extends BaseGrammar
 
         return trim("update {$table} $keyClause set $columns $forIns $where RETURNING {$returning}");
     }
-    
+
     /**
      * {@inheritdoc}
      *
@@ -415,10 +415,10 @@ class Grammar extends BaseGrammar
         // returning-clause
         $returning = implode(', ', $query->returning);
         $where = is_array($query->wheres) ? $this->compileWheres($query) : '';
-        
+
         return trim("delete from {$table} {$keyClause} {$where} RETURNING {$returning}");
     }
-    
+
     /**
      * @param BaseBuilder $query
      * @return string

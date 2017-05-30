@@ -131,7 +131,7 @@ class Builder extends BaseBuilder
 
         return $this;
     }
-    
+
     /**
      * Returns true if Laravel or Lumen >= 5.3
      *
@@ -156,13 +156,13 @@ class Builder extends BaseBuilder
     {
         $this->from = $this->connection->getBucketName();
         $this->type = $type;
-        
+
         if(!is_null($type)) {
-            $this->where( 'eloquent_type', $type );
+            $this->where( Helper::TYPE_NAME, $type );
         }
         return $this;
     }
-    
+
     /**
      * Create a new query instance for nested where condition.
      *
@@ -356,19 +356,19 @@ class Builder extends BaseBuilder
                 break;
             }
         }
-        
+
         if (is_null($this->keys)) {
             $this->useKeys(Helper::getUniqueId($this->type));
         }
 
         if ($batch){
             foreach ($values as &$value) {
-                $value['eloquent_type'] = $this->type;
+                $value[Helper::TYPE_NAME] = $this->type;
                 $key = Helper::getUniqueId($this->type);
                 $result = $this->connection->getCouchbaseBucket()->upsert($key, $value);
             }
         } else {
-            $values['eloquent_type'] = $this->type;
+            $values[Helper::TYPE_NAME] = $this->type;
             $result = $this->connection->getCouchbaseBucket()->upsert($this->keys, $values);
         }
 
@@ -619,7 +619,7 @@ class Builder extends BaseBuilder
     protected function detectValues($values)
     {
         foreach ($values as &$value) {
-            $value['eloquent_type'] = $this->type;
+            $value[Helper::TYPE_NAME] = $this->type;
         }
         return [$values];
     }
