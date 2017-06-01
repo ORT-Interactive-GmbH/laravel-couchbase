@@ -52,6 +52,8 @@ class Connection extends \Illuminate\Database\Connection
         
         // Enable N1QL for bucket
         $this->bucket->enableN1ql($config['n1ql_hosts']);
+        
+        $this->useDefaultQueryGrammar();
 
         $this->useDefaultPostProcessor();
 
