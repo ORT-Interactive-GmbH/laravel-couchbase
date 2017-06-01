@@ -1,7 +1,6 @@
 <?php
     
     use Mpociot\Couchbase\Query\Builder as Query;
-    use DB;
     
     class QueryBuilderTest extends TestCase
     {
