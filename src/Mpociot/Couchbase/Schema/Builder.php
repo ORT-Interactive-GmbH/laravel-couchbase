@@ -94,6 +94,6 @@ class Builder extends \Illuminate\Database\Schema\Builder
      */
     protected function createBlueprint($collection, Closure $callback = null)
     {
-        return new Blueprint($this->connection, $collection);
+        return new Blueprint($collection, $callback);
     }
 }
