@@ -4,6 +4,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Pagination\Paginator;
 
 class Builder extends EloquentBuilder
 {
@@ -54,6 +55,50 @@ class Builder extends EloquentBuilder
         }
 
         return parent::insert($values);
+    }
+    
+    /**
+     * Paginate the given query.
+     *
+     * @param  int  $perPage
+     * @param  array  $columns
+     * @param  string  $pageName
+     * @param  int|null  $page
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function paginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null)
+    {
+        $page = $page ?: Paginator::resolveCurrentPage($pageName);
+        
+        $perPage = $perPage ?: $this->model->getPerPage();
+        
+        /** @var Builder $builder */
+        $builder = $this->forPage($page, $perPage);
+        
+        $query = $builder->getQuery();
+        $rawResult = $query->getWithMeta();
+        $total = $rawResult->metrics['sortCount'];
+    
+    
+        $builder = $this->applyScopes();
+        // If we actually found models we will also eager load any relationships that
+        // have been specified as needing to be eager loaded, which will solve the
+        // n+1 query issue for the developers to avoid running a lot of queries.
+        $models = $this->model->hydrate(json_decode(json_encode($rawResult->rows), true))->all();
+        if (count($models) > 0) {
+            $models = $builder->eagerLoadRelations($models);
+        }
+        
+        $results = $total
+            ? $builder->getModel()->newCollection($models)
+            : $this->model->newCollection();
+        
+        return $this->paginator($results, $total, $perPage, $page, [
+            'path' => Paginator::resolveCurrentPath(),
+            'pageName' => $pageName,
+        ]);
     }
 
     /**

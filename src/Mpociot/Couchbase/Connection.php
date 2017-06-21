@@ -3,6 +3,8 @@
 use CouchbaseBucket;
 use CouchbaseCluster;
 use CouchbaseN1qlQuery;
+use Exception;
+use Illuminate\Database\QueryException;
 
 class Connection extends \Illuminate\Database\Connection
 {
@@ -104,7 +106,7 @@ class Connection extends \Illuminate\Database\Connection
     {
         return $this->bucket->query($query);
     }
-
+    
     /**
      * {@inheritdoc}
      */
@@ -114,17 +116,35 @@ class Connection extends \Illuminate\Database\Connection
             if ($this->pretending()) {
                 return [];
             }
-
+            
             $query = CouchbaseN1qlQuery::fromString($query);
             $query->consistency($this->consistency);
             $query->positionalParams($bindings);
-
+            
             $result = $this->executeQuery($query);
             $rows = [];
             if (isset($result->rows)) {
                 $rows = json_decode(json_encode($result->rows), true);
             }
             return $rows;
+        });
+    }
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function selectWithMeta($query, $bindings = [], $useReadPdo = true)
+    {
+        return $this->run($query, $bindings, function ($query, $bindings) {
+            if ($this->pretending()) {
+                return [];
+            }
+            
+            $query = CouchbaseN1qlQuery::fromString($query);
+            $query->consistency($this->consistency);
+            $query->positionalParams($bindings);
+            
+            return $this->executeQuery($query);
         });
     }
 

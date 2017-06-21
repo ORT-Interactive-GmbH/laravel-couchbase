@@ -186,6 +186,17 @@ class Builder extends BaseBuilder
 
         return $this;
     }
+    
+    /**
+     * Execute the query as a "select" statement.
+     *
+     * @param  array  $columns
+     * @return \Illuminate\Support\Collection
+     */
+    public function getWithMeta($columns = ['*'])
+    {
+        return $this->connection->selectWithMeta($this->toSql(), $this->getBindings());
+    }
 
     /**
      * Set the cursor timeout in seconds.
