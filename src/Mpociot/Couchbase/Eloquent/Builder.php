@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Pagination\Paginator;
+use Mpociot\Couchbase\Connection;
 
 class Builder extends EloquentBuilder
 {
@@ -73,20 +74,27 @@ class Builder extends EloquentBuilder
         $page = $page ?: Paginator::resolveCurrentPage($pageName);
         
         $perPage = $perPage ?: $this->model->getPerPage();
+    
+        $bucketName = $this->getQuery()->getConnection()->getBucketName();
         
         /** @var Builder $builder */
         $builder = $this->forPage($page, $perPage);
+        $builder = $builder->applyScopes();
         
         $query = $builder->getQuery();
         $rawResult = $query->getWithMeta();
         $total = $rawResult->metrics['sortCount'];
-    
-    
-        $builder = $this->applyScopes();
+        $rows = array_map(function($row)use($bucketName){
+            if(isset($row->{$bucketName})) {
+                return $row->{$bucketName};
+            }
+            return $row;
+        }, $rawResult->rows);
         // If we actually found models we will also eager load any relationships that
         // have been specified as needing to be eager loaded, which will solve the
         // n+1 query issue for the developers to avoid running a lot of queries.
-        $models = $this->model->hydrate(json_decode(json_encode($rawResult->rows), true))->all();
+        $result = json_decode(json_encode($rows), true);
+        $models = $this->model->hydrate($result)->all();
         if (count($models) > 0) {
             $models = $builder->eagerLoadRelations($models);
         }
