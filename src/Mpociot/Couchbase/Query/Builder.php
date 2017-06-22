@@ -289,7 +289,7 @@ class Builder extends BaseBuilder
 
         return md5(serialize(array_values($key)));
     }
-
+    
     /**
      * Execute an aggregate function on the database.
      *
@@ -297,22 +297,16 @@ class Builder extends BaseBuilder
      * @param  array   $columns
      * @return mixed
      */
-    public function aggregate($function, $columns = [])
+    public function aggregate($function, $columns = ['*'])
     {
-        $this->aggregate = compact('function', 'columns');
-
-        $results = $this->get($columns);
-
-        // Once we have executed the query, we will reset the aggregate property so
-        // that more select queries can be executed against the database without
-        // the aggregate value getting in the way when the grammar builds it.
-        $this->columns = null;
-        $this->aggregate = null;
-
-        if (isset($results[0])) {
-            $result = (array) $results[0];
-
-            return $result['aggregate'];
+        // added orders to ignore...
+        $results = $this->cloneWithout(['orders', 'columns'])
+            ->cloneWithoutBindings(['select'])
+            ->setAggregate($function, $columns)
+            ->get($columns);
+        
+        if (! $results->isEmpty()) {
+            return array_change_key_case((array) $results[0])['aggregate'];
         }
     }
 

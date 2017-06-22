@@ -98,12 +98,10 @@ class Builder extends EloquentBuilder
             // should not go here...
             $total = $this->getCountForPagination();
         }
-        $rows = $rawResult->rows;
         // If we actually found models we will also eager load any relationships that
         // have been specified as needing to be eager loaded, which will solve the
         // n+1 query issue for the developers to avoid running a lot of queries.
-        $result = json_decode(json_encode($rows), true);
-        $models = $this->model->hydrate($result)->all();
+        $models = $this->model->hydrate($rawResult->rows->all())->all();
         if (count($models) > 0) {
             $models = $builder->eagerLoadRelations($models);
         }
