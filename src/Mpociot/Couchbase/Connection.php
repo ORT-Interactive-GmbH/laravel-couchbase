@@ -143,8 +143,12 @@ class Connection extends \Illuminate\Database\Connection
             $query = CouchbaseN1qlQuery::fromString($query);
             $query->consistency($this->consistency);
             $query->positionalParams($bindings);
-            
-            return $this->executeQuery($query);
+    
+            $result = $this->executeQuery($query);
+            if (isset($result->rows)) {
+                $result->rows = json_decode(json_encode($result->rows), true);
+            }
+            return $result;
         });
     }
 

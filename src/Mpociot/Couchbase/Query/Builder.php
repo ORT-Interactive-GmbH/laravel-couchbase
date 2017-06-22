@@ -193,9 +193,38 @@ class Builder extends BaseBuilder
      * @param  array  $columns
      * @return \Illuminate\Support\Collection
      */
+    public function get($columns = ['*'])
+    {
+        return parent::get($columns);
+    }
+    
+    /**
+     * Execute the query as a "select" statement.
+     *
+     * @param  array  $columns
+     * @return \stdClass
+     */
     public function getWithMeta($columns = ['*'])
     {
-        return $this->connection->selectWithMeta($this->toSql(), $this->getBindings());
+        $original = $this->columns;
+    
+        if (is_null($original)) {
+            $this->columns = $columns;
+        }
+    
+        /** @var Processor $processor */
+        $processor = $this->processor;
+        $results = $processor->processSelectWithMeta($this, $this->runSelectWithMeta());
+    
+        $this->columns = $original;
+        
+        if(isset($results->rows)) {
+            $results->rows = collect($results->rows);
+        } else {
+            $results->rows = collect();
+        }
+    
+        return $results;
     }
 
     /**
@@ -556,6 +585,30 @@ class Builder extends BaseBuilder
             }
         }
         return parent::runSelect();
+    }
+    
+    /**
+     * Run the query as a "select" statement against the connection.
+     *
+     * @return \stdClass
+     */
+    protected function runSelectWithMeta()
+    {
+        if ($this->columns === ['*']) {
+            $this->columns = [$this->connection->getBucketName().'.*'];
+        }
+        if ($this->columns === [$this->connection->getBucketName().'.*'] || in_array('_id', $this->columns)) {
+            $this->columns[] = 'meta('.$this->connection->getBucketName().').id as _id';
+            $this->columns = array_diff($this->columns, ['_id']);
+        }
+        for($i=0; $i<count($this->wheres); $i++) {
+            if (array_key_exists('column', $this->wheres[$i]) === true && $this->wheres[$i]['column'][0] !== '`' && $this->wheres[$i]['column'] == 'build') {
+                $this->wheres[$i]['column'] = '`' . $this->wheres[$i]['column'] . '`';
+            }
+        }
+        return $this->connection->selectWithMeta(
+            $this->toSql(), $this->getBindings(), ! $this->useWritePdo
+        );
     }
 
     /**
