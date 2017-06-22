@@ -71,6 +71,7 @@ class Builder extends EloquentBuilder
      */
     public function paginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null)
     {
+        
         $page = $page ?: Paginator::resolveCurrentPage($pageName);
         
         $perPage = $perPage ?: $this->model->getPerPage();
@@ -82,8 +83,12 @@ class Builder extends EloquentBuilder
         $builder = $builder->applyScopes();
         
         $query = $builder->getQuery();
+        // check if is ordered else below does not work...
+        if(empty($query->orders)) {
+            return parent::paginate($perPage, $columns, $pageName, $page);
+        }
         $rawResult = $query->getWithMeta();
-        $total = $rawResult->metrics['sortCount'];
+        $total = $rawResult->metrics['resultCount'] === 0 ? 0 : $rawResult->metrics['sortCount'];
         $rows = array_map(function($row)use($bucketName){
             if(isset($row->{$bucketName})) {
                 return $row->{$bucketName};
