@@ -3,8 +3,7 @@
 use CouchbaseBucket;
 use CouchbaseCluster;
 use CouchbaseN1qlQuery;
-use Exception;
-use Illuminate\Database\QueryException;
+use Mpociot\Couchbase\Query\Builder as QueryBuilder;
 
 class Connection extends \Illuminate\Database\Connection
 {
@@ -81,7 +80,7 @@ class Connection extends \Illuminate\Database\Connection
     {
         return $this->bucketname;
     }
-
+    
     /**
      * Begin a fluent query against a set of docuemnt types.
      *
@@ -91,12 +90,24 @@ class Connection extends \Illuminate\Database\Connection
     public function builder($type)
     {
         $processor = $this->getPostProcessor();
-
-        $query = new Query\Builder($this, $processor);
-
+        
+        $query = new QueryBuilder($this, $processor);
+        
         return $query->from($type);
     }
-
+    
+    /**
+     * @return QueryBuilder
+     */
+    public function query()
+    {
+        $processor = $this->getPostProcessor();
+    
+        $query = new QueryBuilder($this, $processor);
+    
+        return $query->from(null);
+    }
+    
     /**
      * @param CouchbaseN1qlQuery $query
      *
