@@ -1,5 +1,6 @@
 <?php namespace Mpociot\Couchbase;
 
+use Couchbase\N1qlQuery;
 use CouchbaseBucket;
 use CouchbaseCluster;
 use CouchbaseN1qlQuery;
@@ -106,6 +107,28 @@ class Connection extends \Illuminate\Database\Connection
         $query = new QueryBuilder($this, $processor);
     
         return $query->from(null);
+    }
+    
+    /**
+     * Execute an SQL statement and return the boolean result.
+     *
+     * @param  string  $query
+     * @param  array   $bindings
+     * @return mixed
+     */
+    public function statement($query, $bindings = [])
+    {
+        return $this->run($query, $bindings, function ($query, $bindings) {
+            if ($this->pretending()) {
+                return [];
+            }
+        
+            $query = CouchbaseN1qlQuery::fromString($query);
+            $query->consistency($this->consistency);
+            $query->positionalParams($bindings);
+        
+            return $this->executeQuery($query);
+        });
     }
     
     /**
