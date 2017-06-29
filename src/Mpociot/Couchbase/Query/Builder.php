@@ -186,6 +186,46 @@ class Builder extends BaseBuilder
 
         return $this;
     }
+    
+    /**
+     * Execute the query as a "select" statement.
+     *
+     * @param  array  $columns
+     * @return \Illuminate\Support\Collection
+     */
+    public function get($columns = ['*'])
+    {
+        return parent::get($columns);
+    }
+    
+    /**
+     * Execute the query as a "select" statement.
+     *
+     * @param  array  $columns
+     * @return \stdClass
+     */
+    public function getWithMeta($columns = ['*'])
+    {
+        $original = $this->columns;
+    
+        if (is_null($original)) {
+            $this->columns = $columns;
+        }
+    
+        /** @var Processor $processor */
+        $processor = $this->processor;
+        $results = $processor->processSelectWithMeta($this, $this->runSelectWithMeta());
+    
+        $this->columns = $original;
+        
+        if(isset($results->rows)) {
+            $results->rows = collect($results->rows);
+        } else {
+            $results->rows = collect();
+        }
+    
+        return $results;
+    }
 
     /**
      * Set the cursor timeout in seconds.
@@ -249,7 +289,7 @@ class Builder extends BaseBuilder
 
         return md5(serialize(array_values($key)));
     }
-
+    
     /**
      * Execute an aggregate function on the database.
      *
@@ -257,22 +297,16 @@ class Builder extends BaseBuilder
      * @param  array   $columns
      * @return mixed
      */
-    public function aggregate($function, $columns = [])
+    public function aggregate($function, $columns = ['*'])
     {
-        $this->aggregate = compact('function', 'columns');
-
-        $results = $this->get($columns);
-
-        // Once we have executed the query, we will reset the aggregate property so
-        // that more select queries can be executed against the database without
-        // the aggregate value getting in the way when the grammar builds it.
-        $this->columns = null;
-        $this->aggregate = null;
-
-        if (isset($results[0])) {
-            $result = (array) $results[0];
-
-            return $result['aggregate'];
+        // added orders to ignore...
+        $results = $this->cloneWithout(['orders', 'columns'])
+            ->cloneWithoutBindings(['select'])
+            ->setAggregate($function, $columns)
+            ->get($columns);
+        
+        if (! $results->isEmpty()) {
+            return array_change_key_case((array) $results[0])['aggregate'];
         }
     }
 
@@ -545,6 +579,30 @@ class Builder extends BaseBuilder
             }
         }
         return parent::runSelect();
+    }
+    
+    /**
+     * Run the query as a "select" statement against the connection.
+     *
+     * @return \stdClass
+     */
+    protected function runSelectWithMeta()
+    {
+        if ($this->columns === ['*']) {
+            $this->columns = [$this->connection->getBucketName().'.*'];
+        }
+        if ($this->columns === [$this->connection->getBucketName().'.*'] || in_array('_id', $this->columns)) {
+            $this->columns[] = 'meta('.$this->connection->getBucketName().').id as _id';
+            $this->columns = array_diff($this->columns, ['_id']);
+        }
+        for($i=0; $i<count($this->wheres); $i++) {
+            if (array_key_exists('column', $this->wheres[$i]) === true && $this->wheres[$i]['column'][0] !== '`' && $this->wheres[$i]['column'] == 'build') {
+                $this->wheres[$i]['column'] = '`' . $this->wheres[$i]['column'] . '`';
+            }
+        }
+        return $this->connection->selectWithMeta(
+            $this->toSql(), $this->getBindings(), ! $this->useWritePdo
+        );
     }
 
     /**
