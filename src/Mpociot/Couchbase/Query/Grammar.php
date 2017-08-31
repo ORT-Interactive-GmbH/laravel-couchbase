@@ -189,8 +189,8 @@ class Grammar extends BaseGrammar
         'aggregate',
         'columns',
         'from',
-        'joins',
         'keys',
+        'joins',
         'wheres',
         'groups',
         'havings',
@@ -381,12 +381,18 @@ class Grammar extends BaseGrammar
         $returning = implode(', ', $query->returning);
 
         $columns = [];
+        $unsetColumns = [];
 
         foreach ($values as $key => $value) {
-            $columns[] = $this->wrapKey($key) . ' = ' . $this->parameter($value);
+            if($value instanceof MissingValue){
+                $unsetColumns[] = $this->wrapKey($key);
+            } else {
+                $columns[] = $this->wrapKey($key) . ' = ' . $this->parameter($value);
+            }
         }
 
         $columns = implode(', ', $columns);
+        $unsetColumns = implode(', ', $unsetColumns);
 
         $where = $this->compileWheres($query);
 
@@ -398,7 +404,7 @@ class Grammar extends BaseGrammar
         }
         $forIns = implode(', ', $forIns);
 
-        return trim("update {$table} $keyClause set $columns $forIns $where RETURNING {$returning}");
+        return trim("update {$table} $keyClause set $columns ".($unsetColumns ? "unset ".$unsetColumns : "")."$forIns $where RETURNING {$returning}");
     }
 
     /**

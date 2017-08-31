@@ -114,7 +114,7 @@ class BelongsToMany extends EloquentBelongsToMany
      * @param  bool   $touch
      * @return \Illuminate\Database\Eloquent\Model
      */
-    public function create(array $attributes, array $joining = [], $touch = true)
+    public function create(array $attributes = [], array $joining = [], $touch = true)
     {
         $instance = $this->related->newInstance($attributes);
 
@@ -157,6 +157,9 @@ class BelongsToMany extends EloquentBelongsToMany
 
         $records = $this->formatSyncList($ids);
 
+        if($current === null){
+            $current = [];
+        }
         $detach = array_diff($current, array_keys($records));
 
         // We need to make sure we pass a clean array, so that it is not interpreted
