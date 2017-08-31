@@ -534,6 +534,19 @@ class Builder extends BaseBuilder
     }
 
     /**
+     * Remove all of the expressions from a list of bindings.
+     *
+     * @param  array  $bindings
+     * @return array
+     */
+    protected function cleanBindings(array $bindings)
+    {
+        return array_values(array_filter(parent::cleanBindings($bindings), function ($binding) {
+            return !($binding instanceof MissingValue);
+        }));
+    }
+
+    /**
      * Remove one or more fields.
      *
      * @param  mixed $columns
