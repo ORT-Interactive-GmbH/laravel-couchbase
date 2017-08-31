@@ -191,8 +191,8 @@ class RelationsTest extends TestCase
         $client = Client::with('users')->first();
 
         // Check for relation attributes
-        $this->assertTrue(array_key_exists('user_ids', $client->getAttributes()));
-        $this->assertTrue(array_key_exists('client_ids', $user->getAttributes()));
+        $this->assertTrue(array_key_exists('user_ids', $client->getAttributes()), 'Asserting client has attribute user_ids');
+        $this->assertTrue(array_key_exists('client_ids', $user->getAttributes()), 'Asserting user has attribute client_ids');
 
         $clients = $user->getRelation('clients');
         $users = $client->getRelation('users');
@@ -220,8 +220,8 @@ class RelationsTest extends TestCase
         $this->assertInstanceOf('User', $user);
 
         // Assert they are not attached
-        $this->assertFalse(in_array($client->_id, $user->client_ids));
-        $this->assertFalse(in_array($user->_id, $client->user_ids));
+        $this->assertFalse(in_array($client->_id, $user->client_ids), 'Asserting not to find client::_id in user::client_ids');
+        $this->assertFalse(in_array($user->_id, $client->user_ids), 'Asserting not to find user::_id in client::user_ids');
         $this->assertCount(1, $user->clients);
         $this->assertCount(1, $client->users);
 
@@ -233,8 +233,8 @@ class RelationsTest extends TestCase
         $client = Client::Where('name', '=', 'Buffet Bar Inc.')->first();
 
         // Assert they are attached
-        $this->assertTrue(in_array($client->_id, $user->client_ids));
-        $this->assertTrue(in_array($user->_id, $client->user_ids));
+        $this->assertTrue(in_array($client->_id, $user->client_ids), 'Asserting to find client::_id in user::client_ids');
+        $this->assertTrue(in_array($user->_id, $client->user_ids), 'Asserting to find user::_id in client::user_ids');
         $this->assertCount(2, $user->clients);
         $this->assertCount(2, $client->users);
 
@@ -246,8 +246,8 @@ class RelationsTest extends TestCase
         $client = Client::Where('name', '=', 'Buffet Bar Inc.')->first();
 
         // Assert they are not attached
-        $this->assertFalse(in_array($client->_id, $user->client_ids));
-        $this->assertFalse(in_array($user->_id, $client->user_ids));
+        $this->assertFalse(in_array($client->_id, $user->client_ids), 'Asserting not to find client::_id in user::client_ids (second time)');
+        $this->assertFalse(in_array($user->_id, $client->user_ids), 'Asserting not to find user::_id in client::user_ids (second time)');
         $this->assertCount(0, $user->clients);
         $this->assertCount(1, $client->users);
     
@@ -259,8 +259,8 @@ class RelationsTest extends TestCase
         $client = Client::Where('name', '=', 'Buffet Bar Inc.')->first();
     
         // Assert they are attached
-        $this->assertTrue(in_array($client->_id, $user->client_ids));
-        $this->assertTrue(in_array($user->_id, $client->user_ids));
+        $this->assertTrue(in_array($client->_id, $user->client_ids), 'Asserting to find client::_id in user::client_ids (second time)');
+        $this->assertTrue(in_array($user->_id, $client->user_ids), 'Asserting to find user::_id in client::user_ids (second time)');
         $this->assertCount(1, $user->clients);
         $this->assertCount(2, $client->users);
     }
@@ -287,11 +287,9 @@ class RelationsTest extends TestCase
 
         $user = User::with('clients')->find($user->_id);
 
-        // Assert non attached ID's are detached succesfully
-        $this->assertFalse(in_array('1234523', $user->client_ids));
+        $this->assertFalse(in_array('1234523', $user->client_ids), 'Assert non attached ID\'s are detached succesfully');
 
-        // Assert there are two client objects in the relationship
-        $this->assertCount(2, $user->clients);
+        $this->assertCount(2, $user->clients, 'Assert there are two client objects in the relationship');
 
         // Add more clients
         $user->clients()->sync($moreClients);
@@ -299,8 +297,7 @@ class RelationsTest extends TestCase
         // Refetch
         $user = User::with('clients')->find($user->_id);
 
-        // Assert there are now still 2 client objects in the relationship
-        $this->assertCount(2, $user->clients);
+        $this->assertCount(2, $user->clients, 'Assert there are now still 2 client objects in the relationship');
 
         // Assert that the new relationships name start with synced
         $this->assertStringStartsWith('synced', $user->clients[0]->name);
