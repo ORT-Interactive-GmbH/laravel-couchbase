@@ -47,21 +47,21 @@ class Connection extends \Illuminate\Database\Connection
 
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config);
-        
+
         // Select database
         $this->bucketname = $config['bucket'];
         $this->bucket = $this->connection->openBucket($this->bucketname);
-        
+
         // Enable N1QL for bucket
         $this->bucket->enableN1ql($config['n1ql_hosts']);
-        
+
         $this->useDefaultQueryGrammar();
 
         $this->useDefaultPostProcessor();
 
         $this->useDefaultSchemaGrammar();
     }
-    
+
     /**
      * Get the default post processor instance.
      *
@@ -81,7 +81,7 @@ class Connection extends \Illuminate\Database\Connection
     {
         return $this->bucketname;
     }
-    
+
     /**
      * Begin a fluent query against a set of docuemnt types.
      *
@@ -91,24 +91,24 @@ class Connection extends \Illuminate\Database\Connection
     public function builder($type)
     {
         $processor = $this->getPostProcessor();
-        
+
         $query = new QueryBuilder($this, $processor);
-        
+
         return $query->from($type);
     }
-    
+
     /**
      * @return QueryBuilder
      */
     public function query()
     {
         $processor = $this->getPostProcessor();
-    
+
         $query = new QueryBuilder($this, $processor);
-    
+
         return $query->from(null);
     }
-    
+
     /**
      * Execute an SQL statement and return the boolean result.
      *
@@ -122,15 +122,15 @@ class Connection extends \Illuminate\Database\Connection
             if ($this->pretending()) {
                 return [];
             }
-        
+
             $query = CouchbaseN1qlQuery::fromString($query);
             $query->consistency($this->consistency);
             $query->positionalParams($bindings);
-        
+
             return $this->executeQuery($query);
         });
     }
-    
+
     /**
      * @param CouchbaseN1qlQuery $query
      *
@@ -140,7 +140,7 @@ class Connection extends \Illuminate\Database\Connection
     {
         return $this->bucket->query($query);
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -150,11 +150,11 @@ class Connection extends \Illuminate\Database\Connection
             if ($this->pretending()) {
                 return [];
             }
-            
+
             $query = CouchbaseN1qlQuery::fromString($query);
             $query->consistency($this->consistency);
             $query->positionalParams($bindings);
-            
+
             $result = $this->executeQuery($query);
             $rows = [];
             if (isset($result->rows)) {
@@ -163,7 +163,7 @@ class Connection extends \Illuminate\Database\Connection
             return $rows;
         });
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -173,11 +173,11 @@ class Connection extends \Illuminate\Database\Connection
             if ($this->pretending()) {
                 return [];
             }
-            
+
             $query = CouchbaseN1qlQuery::fromString($query);
             $query->consistency($this->consistency);
             $query->positionalParams($bindings);
-    
+
             $result = $this->executeQuery($query);
             if (isset($result->rows)) {
                 $result->rows = json_decode(json_encode($result->rows), true);
@@ -325,7 +325,11 @@ class Connection extends \Illuminate\Database\Connection
      */
     protected function createConnection($dsn, array $config)
     {
-        return new CouchbaseCluster($dsn, array_get($config, 'username'), array_get($config, 'password'));
+        $cluster = new CouchbaseCluster($config['host']);
+        if (!empty($config['user']) && !empty($config['password'])) {
+            $cluster->authenticateAs(strval($config['user']), strval($config['password']));
+        }
+        return $cluster;
     }
 
     /**
