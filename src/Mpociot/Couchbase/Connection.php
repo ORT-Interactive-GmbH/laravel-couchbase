@@ -52,9 +52,6 @@ class Connection extends \Illuminate\Database\Connection
         $this->bucketname = $config['bucket'];
         $this->bucket = $this->connection->openBucket($this->bucketname);
 
-        // Enable N1QL for bucket
-        $this->bucket->enableN1ql($config['n1ql_hosts']);
-
         $this->useDefaultQueryGrammar();
 
         $this->useDefaultPostProcessor();
