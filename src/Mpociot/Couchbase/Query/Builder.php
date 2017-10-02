@@ -670,6 +670,27 @@ class Builder extends BaseBuilder
     }
 
     /**
+     * Add a "where null" clause to the query.
+     *
+     * @param  string  $column
+     * @param  string  $boolean
+     * @param  bool    $not
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+    public function whereNull($column, $boolean = 'and', $not = false)
+    {
+        if ($column === '_id') {
+            if($not) {
+                // the meta().id of a document is never null
+                // so where condition "meta().id is not null" makes no changes to the result
+                return $this;
+            }
+            $column = 'meta('.$this->connection->getBucketName().').id';
+        }
+        return parent::whereNull($column, $boolean, $not);
+    }
+
+    /**
      * Set custom options for the query.
      *
      * @param  array  $options
