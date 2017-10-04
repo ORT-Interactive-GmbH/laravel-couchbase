@@ -313,6 +313,7 @@ class RelationsTest extends TestCase
         $user = User::create(['name' => 'John Doe']);
         $client1 = Client::create(['name' => 'Pork Pies Ltd.'])->_id;
         $client2 = Client::create(['name' => 'Buffet Bar Inc.'])->_id;
+        $client3 = Client::create(['name' => 'Meatballs Inc.'])->_id;
 
         // Sync multiple
         $user->clients()->sync([$client1, $client2]);
@@ -321,11 +322,18 @@ class RelationsTest extends TestCase
         // Refresh user
         $user = User::where('name', '=', 'John Doe')->first();
 
-        // Sync single
-        $user->clients()->sync([$client1]);
-        $this->assertCount(1, $user->clients);
+        // Sync
+        $user->clients()->sync([$client1, $client3]);
+
+        // Expect two clients
+        $this->assertCount(2, $user->clients);
+
+        // Expect client1 and client3, but not client2
+        $this->assertContains('Pork Pies Ltd.', [$user->clients[0]->name, $user->clients[1]->name]);
+        $this->assertContains('Meatballs Inc.', [$user->clients[0]->name, $user->clients[1]->name]);
+        $this->assertNotContains('Buffet Bar Inc.', [$user->clients[0]->name, $user->clients[1]->name]);
     }
-    
+
     /**
      * @group RelationsTest
      */
@@ -374,7 +382,7 @@ class RelationsTest extends TestCase
         $user = User::where('name', '=', 'John Doe')->first()->toArray();
         $this->assertCount(1, $user['client_ids']);
     }
-    
+
     /**
      * @group RelationsTest
      */
@@ -396,6 +404,19 @@ class RelationsTest extends TestCase
         $this->assertTrue(in_array($user->_id, $group->users->pluck('_id')->toArray()));
         $this->assertEquals($group->_id, $user->groups()->first()->_id);
         $this->assertEquals($user->_id, $group->users()->first()->_id);
+    }
+
+    /**
+     * @group RelationsTest
+     */
+    public function testBelongsToManyBindings()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $groupsRelation = $user->groups();
+
+        $this->assertTrue($groupsRelation instanceof  \Mpociot\Couchbase\Relations\BelongsToMany, 'Assert that User->groups is a BelongsToManyRelation');
+        $this->assertTrue(is_array($groupsRelation->getBindings()), 'Assert that bindings are an array');
+        $this->assertTrue(is_array($groupsRelation->getRawBindings()), 'Assert that raw bindings are an array');
     }
     
     /**
