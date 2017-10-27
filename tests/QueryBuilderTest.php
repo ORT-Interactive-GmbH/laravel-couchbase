@@ -441,7 +441,7 @@
         {
             /** @var Query $query */
             $query = DB::table('table1')->where('a', '=', 'b');
-            $this->assertEquals('select * from '.$query->from.' where eloquent_type = table1 and a = b', $this->queryToSql($query));
+            $this->assertEquals('select * from `'.$query->from.'` where `eloquent_type` = table1 and `a` = b', $this->queryToSql($query));
         }
     
         /**
@@ -451,7 +451,7 @@
         {
             /** @var Query $query */
             $query = DB::table('table2')->where('a', 'b');
-            $this->assertEquals('select * from '.$query->from.' where eloquent_type = table2 and a = b', $this->queryToSql($query));
+            $this->assertEquals('select * from `'.$query->from.'` where `eloquent_type` = table2 and `a` = b', $this->queryToSql($query));
         }
     
         /**
@@ -463,7 +463,7 @@
             $query = DB::table('table3')->where(function(Query $query){
                 $query->where('a', 'b');
             });
-            $this->assertEquals('select * from '.$query->from.' where eloquent_type = table3 and (a = b)', $this->queryToSql($query));
+            $this->assertEquals('select * from `'.$query->from.'` where `eloquent_type` = table3 and (`a` = b)', $this->queryToSql($query));
         }
     
         /**
@@ -473,9 +473,9 @@
         {
             /** @var Query $query */
             $query = DB::table('table4')->where(['a' => 'b']);
-            $this->assertEquals('select * from '.$query->from.' where eloquent_type = table4 and (a = b)', $this->queryToSql($query));
+            $this->assertEquals('select * from `'.$query->from.'` where `eloquent_type` = table4 and (`a` = b)', $this->queryToSql($query));
             $query = DB::table('table5')->where(['a' => 'b', 'c' => 'd']);
-            $this->assertEquals('select * from '.$query->from.' where eloquent_type = table5 and (a = b and c = d)', $this->queryToSql($query));
+            $this->assertEquals('select * from `'.$query->from.'` where `eloquent_type` = table5 and (`a` = b and `c` = d)', $this->queryToSql($query));
         }
     
         private function queryToSql(Query $query) {

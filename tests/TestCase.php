@@ -27,7 +27,12 @@ class TestCase extends Orchestra\Testbench\TestCase
         // reset base path to point to our package's src directory
         //$app['path.base'] = __DIR__ . '/../src';
 
-        $config = require 'config/database.php';
+        $config = require __DIR__ . '/config/database.php';
+
+        \DB::listen(function (\Illuminate\Database\Events\QueryExecuted $sql) use (&$fh) {
+            file_put_contents(__DIR__ . '/../sql-log.sql', $sql->sql . ";\n", FILE_APPEND);
+            file_put_contents(__DIR__.'/../sql-log.sql', '-- '.json_encode($sql->bindings)."\n\n", FILE_APPEND);
+        });
 
         $app['config']->set('app.key', 'ZsZewWyUJ5FsKp9lMwv4tYbNlegQilM7');
 
