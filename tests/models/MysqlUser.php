@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Support\Facades\Schema;
 use Mpociot\Couchbase\Eloquent\HybridRelations;
 
