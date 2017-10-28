@@ -1,5 +1,7 @@
 language: php
 
+dist: trusty
+
 php:
   - 7
   - 7.1
@@ -18,8 +20,8 @@ before_script:
   - sudo dpkg -i couchbase-release-1.0-2-amd64.deb
   - sudo apt-get update
   - sudo apt-get install libcouchbase-dev
-  - wget http://packages.couchbase.com/releases/4.6.0-DP/couchbase-server-enterprise_4.6.0-DP-ubuntu12.04_amd64.deb
-  - sudo dpkg -i couchbase-server-enterprise_4.6.0-DP-ubuntu12.04_amd64.deb
+  - wget http://packages.couchbase.com/releases/4.6.0-DP/couchbase-server-enterprise_4.6.0-DP-ubuntu14.04_amd64.deb
+  - sudo dpkg -i couchbase-server-enterprise_4.6.0-DP-ubuntu14.04_amd64.deb
   - cd /opt/couchbase
   - ./bin/couchbase-server -- -noinput -detached
   - sleep 20
@@ -28,6 +30,7 @@ before_script:
   - sleep 10
   - ./bin/cbq -e http://127.0.0.1:8091 --script "CREATE PRIMARY INDEX ON \`${CB_BUCKET}\` USING GSI;"
   - mysql -e 'create database testing;'
+  - pecl channel-update pecl.php.net
   - pecl install pcs-1.3.3
   - pecl install couchbase-2.4.1
   - cd $TRAVIS_BUILD_DIR
