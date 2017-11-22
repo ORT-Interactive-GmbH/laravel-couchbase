@@ -1,5 +1,7 @@
 <?php namespace Mpociot\Couchbase;
 
+ini_set('couchbase.decoder.json_arrays', '0');
+
 use Illuminate\Support\ServiceProvider;
 use Mpociot\Couchbase\Eloquent\Model;
 

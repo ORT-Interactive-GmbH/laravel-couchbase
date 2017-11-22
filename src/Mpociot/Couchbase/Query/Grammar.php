@@ -1,7 +1,7 @@
 <?php namespace Mpociot\Couchbase\Query;
 
-use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
 use Illuminate\Database\Query\Builder as BaseBuilder;
+use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
 use Mpociot\Couchbase\Helper;
 
 class Grammar extends BaseGrammar
@@ -177,11 +177,13 @@ class Grammar extends BaseGrammar
         'WITH',
         'WITHIN',
         'WORK',
-        'XOR'
+        'XOR',
     ];
 
     /**
      * The components that make up a select clause.
+     *
+     * Note: We added "key"
      *
      * @var array
      */
@@ -189,8 +191,8 @@ class Grammar extends BaseGrammar
         'aggregate',
         'columns',
         'from',
-        'keys',
         'joins',
+        'keys',
         'wheres',
         'groups',
         'havings',
@@ -202,52 +204,146 @@ class Grammar extends BaseGrammar
     ];
 
     /**
-     * {@inheritdoc}
+     * @param \Illuminate\Database\Query\Expression|string $value
+     * @param bool                                         $prefixAlias
+     * @param bool                                         $identifier
+     * @return string
      */
-    protected function wrapValue($value)
+    public function wrap($value, $prefixAlias = false, $identifier = false)
     {
-        if ($value === '*') {
+        if ($this->isExpression($value)) {
+            return $this->getValue($value);
+        }
+
+        if (!is_scalar($value)) {
             return $value;
         }
 
-        return $value;
+        $escaped = $value[0] === '`' || $value[0] === '"' || $value[0] === '\'';
+        if ($escaped) {
+            if ($value[0] === substr($value, -1)) {
+                return $value;
+            }
+        } else if (preg_match('/^[a-zA-Z_]+\(/S', $value)) {
+            return $value;
+        }
+
+        if (false !== strpos($value, '.')) {
+            return $this->wrapIdentifierSegments(explode('.', $value));
+        }
+
+        if (strpos(strtolower($value), ' as ') !== false) {
+            return $this->wrapAliasedIdentifier($value, $prefixAlias);
+        }
+
+        if (!$identifier) {
+            return parent::wrap($value, $prefixAlias);
+        }
+
+        return $this->wrapIdentifierSegments(explode('.', $value));
     }
 
     /**
-     * @param $value
-     *
+     * @param array $values
+     * @param bool  $identifiers
+     * @return array
+     */
+    public function wrapArray(array $values, $identifiers = false)
+    {
+        $ret = [];
+        foreach($values as $value) {
+            $ret[] = $this->wrap($value, false, $identifiers);
+        }
+        return $ret;
+    }
+
+    /**
+     * @param \Illuminate\Database\Query\Expression|string $table
      * @return string
      */
-    protected function wrapKey($value)
+    public function wrapTable($table)
     {
-        if (is_null($value)) {
-            return;
+        if (!$this->isExpression($table)) {
+            return $this->wrap($this->tablePrefix . $table, true, true);
         }
 
-        if(in_array(strtoupper($value), $this->reservedWords) || preg_match('/\s/', $value)) {
-            return '`' . str_replace('"', '""', $value) . '`';
+        return $this->getValue($table);
+    }
+
+    /**
+     * @param string $value
+     * @return string
+     */
+    public function wrapIdentifier($value)
+    {
+        if ($value === '*' || '`' === $value[0] && '`' === substr($value, -1) || preg_match('/^[a-zA-Z_]+\(/S', $value)) {
+            return $value;
         }
 
-        return $value;
+        return '`' . str_replace('`', '``', $value) . '`';
+    }
+
+    /**
+     * @param string $value
+     * @param bool   $prefixAlias
+     * @return string
+     */
+    protected function wrapAliasedIdentifier($value, $prefixAlias = false)
+    {
+        $segments = preg_split('/\s+as\s+/i', $value);
+
+        // If we are wrapping a table we need to prefix the alias with the table prefix
+        // as well in order to generate proper syntax. If this is a column of course
+        // no prefix is necessary. The condition will be true when from wrapTable.
+        if ($prefixAlias) {
+            $segments[1] = $this->tablePrefix . $segments[1];
+        }
+
+        return $this->wrap($segments[0], false, true) . ' as ' . $this->wrap($segments[1], false, true);
+    }
+
+    /**
+     * @param array $segments
+     * @return string
+     */
+    protected function wrapIdentifierSegments($segments)
+    {
+        return implode('.', array_map([$this, 'wrapIdentifier'], $segments));
+    }
+
+    /**
+     * @param \Mpociot\Couchbase\Query\Builder $query
+     * @return string
+     */
+    protected function compileReturning(Builder $query) {
+        $p = [];
+        foreach($query->returning as $t) {
+            $p[] = $this->wrap($t, false, true);
+        }
+        return implode(', ', $p);
     }
 
     /**
      * Compile a "where null" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $where
+     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  array                              $where
      * @return string
      */
     protected function whereNull(BaseBuilder $query, $where)
     {
-        return '('.$this->wrap($where['column']).' is null OR '.$this->wrap($where['column']).' is MISSING )';
+        return '(' .
+            $this->wrap($where['column'], false, true) .
+            ' is null OR ' .
+            $this->wrap($where['column'], false, true) .
+            ' is MISSING )';
     }
 
     /**
      * Compile a "where in" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $where
+     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  array                              $where
      * @return string
      */
     protected function whereIn(BaseBuilder $query, $where)
@@ -258,21 +354,33 @@ class Grammar extends BaseGrammar
 
         $values = $this->parameterize($where['values']);
 
-        if ($where['column'] === '_id') {
-            $column = 'meta('.$query->getConnection()->getBucketName().').id';
-            return $column.' in ['.$values.']';
+        if (trim($where['column'], "`") === '_id') {
+            return 'meta(' .
+                $this->wrap($query->getConnection()->getBucketName(), false, true) .
+                ').`id`' .
+                ' in [' .
+                $values .
+                ']';
         } else {
-            return $where['column'].' in ['.$values.']';
+            return $this->wrap($where['column'], false, true) . ' in [' . $values . ']';
             $colIdentifier = str_random(5);
-            return 'ANY '.$colIdentifier.' IN '.$this->wrap($where['column']).' SATISFIES '.$colIdentifier.' IN ["'.$values.'"]';
+            return 'ANY ' .
+                $this->wrap($colIdentifier, false, true) .
+                ' IN ' .
+                $this->wrap($where['column'], false, true) .
+                ' SATISFIES ' .
+                $this->wrap($colIdentifier, false, true) .
+                ' IN ["' .
+                $values .
+                '"]';
         }
     }
 
     /**
      * Compile a "where not in" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $where
+     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  array                              $where
      * @return string
      */
     protected function whereNotIn(BaseBuilder $query, $where)
@@ -283,21 +391,33 @@ class Grammar extends BaseGrammar
 
         $values = $this->parameterize($where['values']);
 
-        if ($where['column'] === '_id') {
-            $column = 'meta('.$query->getConnection()->getBucketName().').id';
-            return $column.' not in ['.$values.']';
+        if (trim($where['column'], "`") === '_id') {
+            return 'meta(' .
+                $this->wrap($query->getConnection()->getBucketName(), false, true) .
+                ').`id`' .
+                ' not in [' .
+                $values .
+                ']';
         } else {
-            return $where['column'].' not in ['.$values.']';
+            return $this->wrap($where['column'], false, true) . ' not in [' . $values . ']';
             $colIdentifier = str_random(5);
-            return 'ANY '.$colIdentifier.' IN '.$this->wrap($where['column']).' SATISFIES '.$colIdentifier.' IN ["'.$values.'"]';
+            return 'ANY ' .
+                $this->wrap($colIdentifier, false, true) .
+                ' IN ' .
+                $this->wrap($where['column'], false, true) .
+                ' SATISFIES ' .
+                $this->wrap($colIdentifier, false, true) .
+                ' IN ["' .
+                $values .
+                '"]';
         }
     }
 
     /**
      * Compile a "where in" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $where
+     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  array                              $where
      * @return string
      */
     protected function whereAnyIn(BaseBuilder $query, $where)
@@ -309,28 +429,41 @@ class Grammar extends BaseGrammar
         $values = $this->parameterize($where['values']);
 
         $colIdentifier = str_random(5);
-        return 'ANY '.$colIdentifier.' IN '.$this->wrap($where['column']).' SATISFIES '.$colIdentifier.' IN ["'.$values.'"]';
+        return 'ANY ' .
+            $this->wrap($colIdentifier, false, true) .
+            ' IN ' .
+            $this->wrap($where['column'], false, true) .
+            ' SATISFIES ' .
+            $this->wrap($colIdentifier, false, true) .
+            ' IN ["' .
+            $values .
+            '"]';
     }
 
-    public function compileUnset(BaseBuilder $query, array $values)
+    /**
+     * @param \Mpociot\Couchbase\Query\Builder $query
+     * @param array                            $values
+     * @return string
+     */
+    public function compileUnset(Builder $query, array $values)
     {
         // keyspace-ref:
         $table = $this->wrapTable($query->from);
         // use-keys-clause:
         $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
         // returning-clause
-        $returning = implode(', ', $query->returning);
+        $returning = $this->compileReturning($query);
 
         $columns = [];
 
         foreach ($values as $key) {
-            $columns[] = $this->wrap($key);
+            $columns[] = $this->wrap($key, false, true);
         }
 
         $columns = implode(', ', $columns);
 
         $where = $this->compileWheres($query);
-        return trim("update {$table} {$keyClause} unset $columns $where RETURNING {$returning}");
+        return trim("update {$table} {$keyClause} unset {$columns} {$where} RETURNING {$returning}");
     }
 
     /**
@@ -347,7 +480,7 @@ class Grammar extends BaseGrammar
         // use-keys-clause:
         $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
         // returning-clause
-        $returning = implode(', ', $query->returning);
+        $returning = $this->compileReturning($query);
 
         if (!is_array(reset($values))) {
             $values = [$values];
@@ -357,13 +490,13 @@ class Grammar extends BaseGrammar
         foreach ($values as $record) {
             $parameters[] = '(' . $this->parameterize($record) . ')';
         }
-        $parameters = collect($parameters)->transform(function ($parameter) use($keyClause) {
+        $parameters = collect($parameters)->transform(function ($parameter) use ($keyClause) {
             return "({$keyClause}, ?)";
         });
-        $parameters = implode(', ', $parameters->toArray());
+        $parameters = implode(', ', array_fill(0, count($parameters), '?'));
         $keyValue = '(KEY, VALUE)';
 
-        return "insert into {$table} {$keyValue} values $parameters RETURNING {$returning}";
+        return "insert into {$table} {$keyValue} values {$parameters} RETURNING {$returning}";
     }
 
     /**
@@ -378,16 +511,16 @@ class Grammar extends BaseGrammar
         // use-keys-clause:
         $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
         // returning-clause
-        $returning = implode(', ', $query->returning);
+        $returning = $this->compileReturning($query);
 
         $columns = [];
         $unsetColumns = [];
 
         foreach ($values as $key => $value) {
-            if($value instanceof MissingValue){
-                $unsetColumns[] = $this->wrapKey($key);
+            if ($value instanceof MissingValue) {
+                $unsetColumns[] = $this->wrap($key, false, true);
             } else {
-                $columns[] = $this->wrapKey($key) . ' = ' . $this->parameter($value);
+                $columns[] = $this->wrap($key, false, true) . ' = ' . $this->parameter($value);
             }
         }
 
@@ -399,12 +532,24 @@ class Grammar extends BaseGrammar
         $forIns = [];
         foreach ($query->forIns as $forIn) {
             foreach ($forIn['values'] as $key => $value) {
-                $forIns[] = $this->wrap($key) . ' = "' . $value.'" FOR '.str_singular($forIn['alias']).' IN '.$forIn['alias'].' WHEN '.$forIn['column'].'="'.$this->wrapValue($forIn['value']).'" END';
+                $forIns[] = $this->wrap($key, false, true) .
+                    ' = ' .
+                    $this->wrap($value) .
+                    ' FOR ' .
+                    $this->wrap(str_singular($forIn['alias']), false, true) .
+                    ' IN ' .
+                    $this->wrap($forIn['alias'], false, true) .
+                    ' WHEN ' .
+                    $this->wrap($forIn['column'], false, true) .
+                    '= ' . $this->wrap($forIn['value']) .
+                    ' END';
             }
         }
         $forIns = implode(', ', $forIns);
 
-        return trim("update {$table} $keyClause set $columns ".($unsetColumns ? "unset ".$unsetColumns : "")."$forIns $where RETURNING {$returning}");
+        return trim("update {$table} $keyClause set $columns " .
+            ($unsetColumns ? "unset " . $unsetColumns : "") .
+            "{$forIns} {$where} RETURNING {$returning}");
     }
 
     /**
@@ -419,7 +564,7 @@ class Grammar extends BaseGrammar
         // use-keys-clause:
         $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
         // returning-clause
-        $returning = implode(', ', $query->returning);
+        $returning = $this->compileReturning($query);
         $where = is_array($query->wheres) ? $this->compileWheres($query) : '';
 
         return trim("delete from {$table} {$keyClause} {$where} RETURNING {$returning}");
@@ -431,12 +576,12 @@ class Grammar extends BaseGrammar
      */
     public function compileKeys(BaseBuilder $query)
     {
-        if(is_array($query->keys)) {
-            if(empty($query->keys)) {
+        if (is_array($query->keys)) {
+            if (0 === count($query->keys)) {
                 return 'USE KEYS []';
             }
-            return 'USE KEYS [\''.implode('\', \'', $query->keys).'\']';
+            return 'USE KEYS ["' . implode('","', $query->keys) . '"]';
         }
-        return 'USE KEYS \''.$query->keys.'\'';
+        return "USE KEYS \"{$query->keys}\"";
     }
 }

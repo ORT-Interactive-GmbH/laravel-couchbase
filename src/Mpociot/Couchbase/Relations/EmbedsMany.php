@@ -10,8 +10,9 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Initialize the relation on a set of models.
      *
-     * @param  array   $models
-     * @param  string  $relation
+     * @param  array  $models
+     * @param  string $relation
+     * @return array
      */
     public function initRelation(array $models, $relation)
     {

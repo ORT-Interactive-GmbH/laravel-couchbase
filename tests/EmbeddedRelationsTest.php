@@ -58,7 +58,8 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertEquals(2, count($user->addresses()->get()));
         $this->assertEquals(2, $user->addresses->count());
         $this->assertEquals(2, $user->addresses()->count());
-        $this->assertEquals(['London', 'New York'], $user->addresses->pluck('city')->all());
+        $all = $user->addresses->pluck('city')->all();
+        $this->assertEquals(['London', 'New York'], $all);
 
         $freshUser = User::find($user->_id);
         $this->assertEquals(['London', 'New York'], $freshUser->addresses->pluck('city')->all());

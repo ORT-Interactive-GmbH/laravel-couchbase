@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Support\Facades\Schema;
 use Mpociot\Couchbase\Eloquent\HybridRelations;
 
@@ -25,11 +26,12 @@ class MysqlBook extends Eloquent
         $schema = Schema::connection('mysql');
 
         if (!$schema->hasTable('books')) {
-            Schema::connection('mysql')->create('books', function ($table) {
-                $table->string('title');
-                $table->string('author_id');
-                $table->timestamps();
-            });
+            Schema::connection('mysql')->create('books',
+                function ($table) {
+                    $table->string('title');
+                    $table->string('author_id');
+                    $table->timestamps();
+                });
         }
     }
 }
