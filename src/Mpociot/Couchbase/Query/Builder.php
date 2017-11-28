@@ -506,31 +506,27 @@ class Builder extends BaseBuilder
      */
     public function pull($column, $value = null)
     {
-        try {
-            $obj = $this->connection->getCouchbaseBucket()->get($this->keys);
-            if (!is_array($value)) {
-                $value = [$value];
-            }
-            $filtered = collect($obj->value->{$column})->reject(function ($val, $key) use ($value){
-                $match = false;
-                foreach (array_keys($value) AS $matchKey) {
-                    if (is_object($val)) {
-                        if ($val->{$matchKey} === $value[$matchKey]) {
-                            $match = true;
-                        }
-                    } else {
-                        $match = $val === $value[$matchKey];
-                    }
-
-                }
-                return $match;
-            });
-            $obj->value->{$column} = $filtered->flatten()->toArray();
-
-            return $this->connection->getCouchbaseBucket()->upsert($this->keys, $obj->value);
-        } catch (\Exception $e) {
-
+        $obj = $this->connection->getCouchbaseBucket()->get($this->keys);
+        if (!is_array($value)) {
+            $value = [$value];
         }
+        $filtered = collect($obj->value->{$column})->reject(function ($val, $key) use ($value){
+            $match = false;
+            if (is_object($val)) {
+                foreach($value AS $matchKey => $matchValue) {
+                    if ($val->{$matchKey} === $value[$matchKey]) {
+                        $match = true;
+                    }
+                }
+            } else {
+                $match = in_array($val, $value);
+            }
+
+            return $match;
+        });
+        $obj->value->{$column} = $filtered->flatten()->toArray();
+
+        return $this->connection->getCouchbaseBucket()->upsert($this->keys, $obj->value);
     }
 
     /**
