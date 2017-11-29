@@ -323,8 +323,8 @@ class Connection extends \Illuminate\Database\Connection
     protected function createConnection($dsn, array $config)
     {
         $cluster = new CouchbaseCluster($config['host']);
-        if (!empty($config['user']) && !empty($config['password'])) {
-            $cluster->authenticateAs(strval($config['user']), strval($config['password']));
+        if (!empty($config['username']) && !empty($config['password'])) {
+            $cluster->authenticateAs(strval($config['username']), strval($config['password']));
         }
         return $cluster;
     }
