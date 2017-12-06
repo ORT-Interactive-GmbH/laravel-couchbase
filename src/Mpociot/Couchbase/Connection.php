@@ -8,6 +8,10 @@ use Mpociot\Couchbase\Query\Builder as QueryBuilder;
 
 class Connection extends \Illuminate\Database\Connection
 {
+    const AUTH_TYPE_USER_PASSWORD = 'password';
+    const AUTH_TYPE_CLUSTER_ADMIN = 'cluster';
+    const AUTH_TYPE_NONE = 'none';
+
     /**
      * The Couchbase database handler.
      *
@@ -47,6 +51,20 @@ class Connection extends \Illuminate\Database\Connection
 
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config);
+        if(isset($config['username']) && isset($config['password']) && isset($config['auth_type'])) {
+            if($config['auth_type'] === self::AUTH_TYPE_USER_PASSWORD) {
+                // Couchbase 5.x
+                $cbAuth = new \Couchbase\PasswordAuthenticator();
+                $cbAuth->username($config['username']);
+                $cbAuth->password($config['password']);
+                $this->connection->authenticate($cbAuth);
+            } elseif($config['auth_type'] === self::AUTH_TYPE_CLUSTER_ADMIN) {
+                // Couchbase 4.x
+                $cbAuth = new \CouchbaseAuthenticator();
+                $cbAuth->cluster($config['username'], $config['password']);
+                $this->connection->authenticate($cbAuth);
+            }
+        }
 
         // Select database
         $this->bucketname = $config['bucket'];
