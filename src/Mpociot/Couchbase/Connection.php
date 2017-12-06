@@ -51,7 +51,7 @@ class Connection extends \Illuminate\Database\Connection
 
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config);
-        if(isset($config['username']) && isset($config['password'])) {
+        if(isset($config['username']) && isset($config['password']) && isset($config['auth_type'])) {
             if($config['auth_type'] === self::AUTH_TYPE_USER_PASSWORD) {
                 // Couchbase 5.x
                 $cbAuth = new \Couchbase\PasswordAuthenticator();
