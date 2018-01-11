@@ -297,9 +297,7 @@ class BelongsToMany extends EloquentBelongsToMany
 
         foreach ($results as $result) {
             foreach ((array)$result->$foreign as $item) {
-                if ((is_array($item) === true && count($item) == 0) === false) {
-                    $dictionary[$item][] = $result;
-                }
+                $dictionary[$item][] = $result;
             }
         }
 
