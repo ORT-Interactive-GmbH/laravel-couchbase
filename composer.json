@@ -31,5 +31,12 @@
             "tests/models",
             "tests/seeds"
         ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Mpociot\\Couchbase\\CouchbaseServiceProvider"
+            ]
+        }
     }
 }
