@@ -439,4 +439,22 @@ class Grammar extends BaseGrammar
         }
         return 'USE KEYS \''.$query->keys.'\'';
     }
+
+    /**
+     * @param array $values
+     * @return mixed
+     */
+    public function parameterize(array $values)
+    {
+        /**
+         * Quick fix to allow:
+         * objectA.relation_ids = [1,2,3,4]
+         * to reference objectB.id
+         */
+        if (isset($values[0]) && is_array($values[0])) {
+            $values = collect($values)->flatten()->toArray();
+        }
+        return parent::parameterize($values);
+    }
+
 }
