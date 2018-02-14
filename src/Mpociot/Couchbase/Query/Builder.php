@@ -138,7 +138,7 @@ class Builder extends BaseBuilder
      */
     public function __construct(Connection $connection, Processor $processor)
     {
-        $this->grammar = new Grammar;
+        $this->grammar = new Grammar($connection->hasInlineParameters());
         $this->connection = $connection;
         $this->processor = $processor;
         $this->useCollections = $this->shouldUseCollections();
@@ -444,6 +444,41 @@ class Builder extends BaseBuilder
         $this->addBinding($values, 'where');
 
         return $this;
+    }
+
+
+    /**
+     * Set the bindings on the query builder.
+     *
+     * @param  array   $bindings
+     * @param  string  $type
+     * @return $this
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function setBindings(array $bindings, $type = 'where')
+    {
+        if($this->getConnection()->hasInlineParameters()) {
+            return $this;
+        }
+        return parent::setBindings($bindings, $type);
+    }
+
+    /**
+     * Add a binding to the query.
+     *
+     * @param  mixed   $value
+     * @param  string  $type
+     * @return $this
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function addBinding($value, $type = 'where')
+    {
+        if($this->getConnection()->hasInlineParameters()) {
+            return $this;
+        }
+        return parent::addBinding($value, $type);
     }
 
     /**

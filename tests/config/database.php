@@ -10,6 +10,7 @@ return [
             'user'       => env('CB_USER', env('CB_USERNAME')),
             'password'   => env('CB_PASSWORD'),
             'n1ql_hosts' => ['http://127.0.0.18093'],
+            'inline_parameters' => env('CB_INLINE_PARAMETERS', false),
         ] : [
             'name'       => 'couchbase',
             'driver'     => 'couchbase',
@@ -21,6 +22,7 @@ return [
             'auth_type' => env('CB_AUTH_TYPE', \Mpociot\Couchbase\Connection::AUTH_TYPE_USER_PASSWORD),
             'admin_username' => env('CB_ADMIN_USERNAME',env('CB_USER',env('CB_USERNAME','Administrator'))),
             'admin_password' => env('CB_ADMIN_PASSWORD',env('CB_PASSWORD','password')),
+            'inline_parameters' => env('CB_INLINE_PARAMETERS', false),
         ],
         'mysql'     => [
             'name'      => 'mysql',
