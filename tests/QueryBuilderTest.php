@@ -658,6 +658,20 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
+     * @group QueryBuilderTest
+     */
+    public function testUseIndex()
+    {
+        $query = DB::table('table6')->useIndex('test-index')->select();
+        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` USE INDEX (`test-index` USING GSI) where `eloquent_type` = "table6"',
+            $this->queryToSql($query));
+
+        $query = DB::table('table6')->useIndex('test-index', Grammar::INDEX_TYPE_VIEW)->select();
+        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` USE INDEX (`test-index` USING VIEW) where `eloquent_type` = "table6"',
+            $this->queryToSql($query));
+    }
+
+    /**
      * @param Query $query
      * @return string
      */
