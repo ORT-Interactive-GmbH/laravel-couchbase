@@ -128,6 +128,12 @@ class Builder extends BaseBuilder
     public $keys = null;
 
     /**
+     * Var used because it is called by magic for compileUse() / has to be not null
+     * @var true
+     */
+    public $use = true;
+
+    /**
      * Indexes used via 'USE INDEX'
      * @var array
      */
