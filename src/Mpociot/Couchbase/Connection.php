@@ -1,6 +1,5 @@
 <?php namespace Mpociot\Couchbase;
 
-use Couchbase\N1qlQuery;
 use CouchbaseBucket;
 use CouchbaseCluster;
 use CouchbaseN1qlQuery;
@@ -342,6 +341,9 @@ class Connection extends \Illuminate\Database\Connection
     {
         $cluster = new CouchbaseCluster($config['host']);
         if (!empty($config['username']) && !empty($config['password'])) {
+            if(!method_exists($cluster, 'authenticateAs')) {
+                throw new \RuntimeException('The couchbase php sdk does not support password authentication below version 2.4.0.');
+            }
             $cluster->authenticateAs(strval($config['username']), strval($config['password']));
         }
         return $cluster;

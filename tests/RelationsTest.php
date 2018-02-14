@@ -264,13 +264,14 @@ class RelationsTest extends TestCase
         $this->assertCount(1, $user->clients);
         $this->assertCount(2, $client->users);
     }
-    
+
     /**
      * @group RelationsTest
      */
     public function testBelongsToManyAttachesExistingModels()
     {
-        $user = User::create(['name' => 'John Doe', 'client_ids' => ['1234523']]);
+        $client = Client::create(['name' => 'Foo Bar Ltd.', 'user_ids' => []]);
+        $user = User::create(['name' => 'John Doe', 'client_ids' => [$client->_id,]]);
 
         $clients = [
             Client::create(['name' => 'Pork Pies Ltd.'])->_id,
@@ -287,7 +288,7 @@ class RelationsTest extends TestCase
 
         $user = User::with('clients')->find($user->_id);
 
-        $this->assertFalse(in_array('1234523', $user->client_ids), 'Assert non attached ID\'s are detached succesfully');
+        $this->assertFalse(in_array($client->_id, $user->client_ids), 'Assert non attached ID\'s are detached succesfully');
 
         $this->assertCount(2, $user->clients, 'Assert there are two client objects in the relationship');
 
@@ -302,6 +303,40 @@ class RelationsTest extends TestCase
         // Assert that the new relationships name start with synced
         $this->assertStringStartsWith('synced', $user->clients[0]->name);
         $this->assertStringStartsWith('synced', $user->clients[1]->name);
+    }
+
+    /**
+     * @group RelationsTest
+     */
+    public function testDetachNonExistingModel()
+    {
+        $client = Client::create(['name' => 'Foo Bar Ltd.']);
+        $user = User::create(['name' => 'John Doe', 'client_ids' => [$client->_id,]]);
+        $user2 = User::create(['name' => 'John Doe2', 'client_ids' => [$client->_id,]]);
+
+        // Sync multiple records
+        $this->assertErrorException(function()use($user){
+            $user->clients()->sync([]);
+        }, E_USER_WARNING, '/^Tying to pull a value from non existing column/');
+        $this->assertErrorException(function()use($user2, $client){
+            $user2->clients()->detach([$client->_id]);
+        }, E_USER_WARNING, '/^Tying to pull a value from non existing column/');
+    }
+
+    /**
+     * @group RelationsTest
+     */
+    public function testDetachModelsWithMissingColumn()
+    {
+        $user = User::create(['name' => 'John Doe', 'client_ids' => ['non_existing_client_id']]);
+
+        // Sync multiple records
+        $this->assertErrorException(function()use($user){
+            $user->clients()->sync([]);
+        }, E_USER_WARNING, '/^Tying to pull a value from non existing document/');
+        $this->assertErrorException(function()use($user){
+            $user->clients()->detach(['non_existing_client_id2']);
+        }, E_USER_WARNING, '/^Tying to pull a value from non existing document/');
     }
     
     /**

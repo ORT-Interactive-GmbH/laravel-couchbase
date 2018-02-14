@@ -1,6 +1,8 @@
 <?php namespace Mpociot\Couchbase\Query;
 
+use Couchbase\Exception;
 use Illuminate\Database\Query\Builder as BaseBuilder;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Mpociot\Couchbase\Connection;
@@ -45,18 +47,56 @@ class Builder extends BaseBuilder
     public $paginating = false;
 
     /**
+     * @var array
+     */
+    public $options;
+
+    /**
      * All of the available clause operators.
      *
      * @var array
      */
     public $operators = [
-        '=', '<', '>', '<=', '>=', '<>', '!=',
-        'like', 'not like', 'between', 'ilike',
-        '&', '|', '^', '<<', '>>',
-        'rlike', 'regexp', 'not regexp',
-        'exists', 'type', 'mod', 'where', 'all', 'size', 'regex', 'text', 'slice', 'elemmatch',
-        'geowithin', 'geointersects', 'near', 'nearsphere', 'geometry',
-        'maxdistance', 'center', 'centersphere', 'box', 'polygon', 'uniquedocs',
+        '=',
+        '<',
+        '>',
+        '<=',
+        '>=',
+        '<>',
+        '!=',
+        'like',
+        'not like',
+        'between',
+        'ilike',
+        '&',
+        '|',
+        '^',
+        '<<',
+        '>>',
+        'rlike',
+        'regexp',
+        'not regexp',
+        'exists',
+        'type',
+        'mod',
+        'where',
+        'all',
+        'size',
+        'regex',
+        'text',
+        'slice',
+        'elemmatch',
+        'geowithin',
+        'geointersects',
+        'near',
+        'nearsphere',
+        'geometry',
+        'maxdistance',
+        'center',
+        'centersphere',
+        'box',
+        'polygon',
+        'uniquedocs',
     ];
 
     /**
@@ -65,12 +105,12 @@ class Builder extends BaseBuilder
      * @var array
      */
     protected $conversion = [
-        '='  => '=',
+        '=' => '=',
         '!=' => '$ne',
         '<>' => '$ne',
-        '<'  => '$lt',
+        '<' => '$lt',
         '<=' => '$lte',
-        '>'  => '$gt',
+        '>' => '$gt',
         '>=' => '$gte',
     ];
 
@@ -94,7 +134,7 @@ class Builder extends BaseBuilder
      * Create a new query builder instance.
      *
      * @param Connection $connection
-     * @param Processor  $processor
+     * @param Processor $processor
      */
     public function __construct(Connection $connection, Processor $processor)
     {
@@ -102,17 +142,17 @@ class Builder extends BaseBuilder
         $this->connection = $connection;
         $this->processor = $processor;
         $this->useCollections = $this->shouldUseCollections();
-        $this->returning([$this->connection->getBucketName().'.*']);
+        $this->returning([$this->connection->getBucketName() . '.*']);
     }
 
     /**
-     * @param $keys
+     * @param array|string $keys
      *
      * @return $this
      */
     public function useKeys($keys)
     {
-        if(is_null($keys)) {
+        if (is_null($keys)) {
             $keys = [];
         }
         $this->keys = $keys;
@@ -141,7 +181,9 @@ class Builder extends BaseBuilder
     {
         if (function_exists('app')) {
             $version = app()->version();
-            $version = filter_var(explode(')', $version)[0], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION); // lumen
+            $version = filter_var(explode(')', $version)[0],
+                FILTER_SANITIZE_NUMBER_FLOAT,
+                FILTER_FLAG_ALLOW_FRACTION); // lumen
             return version_compare($version, '5.3', '>=');
         }
     }
@@ -149,7 +191,7 @@ class Builder extends BaseBuilder
     /**
      * Set the table which the query is targeting.
      *
-     * @param  string  $type
+     * @param  string $type
      * @return $this
      */
     public function from($type)
@@ -157,8 +199,8 @@ class Builder extends BaseBuilder
         $this->from = $this->connection->getBucketName();
         $this->type = $type;
 
-        if(!is_null($type)) {
-            $this->where( Helper::TYPE_NAME, $type );
+        if (!is_null($type)) {
+            $this->where(Helper::TYPE_NAME, $type);
         }
         return $this;
     }
@@ -177,7 +219,7 @@ class Builder extends BaseBuilder
     /**
      * Set the projections.
      *
-     * @param  array  $columns
+     * @param  array $columns
      * @return $this
      */
     public function project($columns)
@@ -186,44 +228,33 @@ class Builder extends BaseBuilder
 
         return $this;
     }
-    
+
     /**
      * Execute the query as a "select" statement.
      *
-     * @param  array  $columns
-     * @return \Illuminate\Support\Collection
-     */
-    public function get($columns = ['*'])
-    {
-        return parent::get($columns);
-    }
-    
-    /**
-     * Execute the query as a "select" statement.
-     *
-     * @param  array  $columns
+     * @param  array $columns
      * @return \stdClass
      */
     public function getWithMeta($columns = ['*'])
     {
         $original = $this->columns;
-    
+
         if (is_null($original)) {
             $this->columns = $columns;
         }
-    
+
         /** @var Processor $processor */
         $processor = $this->processor;
         $results = $processor->processSelectWithMeta($this, $this->runSelectWithMeta());
-    
+
         $this->columns = $original;
-        
-        if(isset($results->rows)) {
+
+        if (isset($results->rows)) {
             $results->rows = collect($results->rows);
         } else {
             $results->rows = collect();
         }
-    
+
         return $results;
     }
 
@@ -256,16 +287,16 @@ class Builder extends BaseBuilder
     /**
      * Execute a query for a single record by ID.
      *
-     * @param  mixed  $id
-     * @param  array  $columns
+     * @param  mixed $id
+     * @param  array $columns
      * @return mixed|static
      */
     public function find($id, $columns = ['*'])
     {
         if (is_array($id) === true) {
-            return $this->useKeys($id);
+            return $this->useKeys($id)->get($columns);
         }
-        return $this->useKeys($id)->first();
+        return $this->useKeys($id)->first($columns);
     }
 
     /**
@@ -276,25 +307,25 @@ class Builder extends BaseBuilder
     public function generateCacheKey()
     {
         $key = [
-            'bucket'     => $this->from,
-            'type'       => $this->type,
-            'wheres'     => $this->wheres,
-            'columns'    => $this->columns,
-            'groups'     => $this->groups,
-            'orders'     => $this->orders,
-            'offset'     => $this->offset,
-            'limit'      => $this->limit,
-            'aggregate'  => $this->aggregate,
+            'bucket' => $this->from,
+            'type' => $this->type,
+            'wheres' => $this->wheres,
+            'columns' => $this->columns,
+            'groups' => $this->groups,
+            'orders' => $this->orders,
+            'offset' => $this->offset,
+            'limit' => $this->limit,
+            'aggregate' => $this->aggregate,
         ];
 
         return md5(serialize(array_values($key)));
     }
-    
+
     /**
      * Execute an aggregate function on the database.
      *
-     * @param  string  $function
-     * @param  array   $columns
+     * @param  string $function
+     * @param  array $columns
      * @return mixed
      */
     public function aggregate($function, $columns = ['*'])
@@ -304,9 +335,9 @@ class Builder extends BaseBuilder
             ->cloneWithoutBindings(['select'])
             ->setAggregate($function, $columns)
             ->get($columns);
-        
-        if (! $results->isEmpty()) {
-            return array_change_key_case((array) $results[0])['aggregate'];
+
+        if (!$results->isEmpty()) {
+            return array_change_key_case((array)$results[0])['aggregate'];
         }
     }
 
@@ -317,15 +348,16 @@ class Builder extends BaseBuilder
      */
     public function exists()
     {
-        return ! is_null($this->first());
+        return !is_null($this->first());
     }
 
     /**
      * Force the query to only return distinct results.
      *
-     * @return Builder
+     * @param string|null $column
+     * @return \Mpociot\Couchbase\Query\Builder
      */
-    public function distinct($column = false)
+    public function distinct($column = null)
     {
         $this->distinct = true;
 
@@ -337,12 +369,70 @@ class Builder extends BaseBuilder
     }
 
     /**
+     * @param \Closure|\Illuminate\Database\Query\Builder|string $query
+     * @param string $as
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function selectSub($query, $as)
+    {
+        if ($query instanceof \Closure) {
+            $callback = $query;
+
+            $callback($query = $this->newQuery());
+        }
+
+        list($query, $bindings) = $this->parseSubSelect($query);
+
+        return $this->selectRaw(
+            '(' . $query . ') as ' . $this->grammar->wrap($as, false, true), $bindings
+        );
+    }
+
+    /**
+     * @param string $column
+     * @param int $amount
+     * @param array $extra
+     * @return int
+     */
+    public function increment($column, $amount = 1, array $extra = [])
+    {
+        if (!is_numeric($amount)) {
+            throw new \InvalidArgumentException('Non-numeric value passed to increment method.');
+        }
+
+        $wrapped = $this->grammar->wrap($column, false, true);
+
+        $columns = array_merge([$column => $this->raw("$wrapped + $amount")], $extra);
+
+        return $this->update($columns);
+    }
+
+    /**
+     * @param string $column
+     * @param int $amount
+     * @param array $extra
+     * @return int
+     */
+    public function decrement($column, $amount = 1, array $extra = [])
+    {
+        if (!is_numeric($amount)) {
+            throw new \InvalidArgumentException('Non-numeric value passed to decrement method.');
+        }
+
+        $wrapped = $this->grammar->wrap($column, false, true);
+
+        $columns = array_merge([$column => $this->raw("$wrapped - $amount")], $extra);
+
+        return $this->update($columns);
+    }
+
+    /**
      * Add a where between statement to the query.
      *
-     * @param  string  $column
-     * @param  array   $values
-     * @param  string  $boolean
-     * @param  bool  $not
+     * @param  string $column
+     * @param  array $values
+     * @param  string $boolean
+     * @param  bool $not
      * @return Builder
      */
     public function whereBetween($column, array $values, $boolean = 'and', $not = false)
@@ -359,8 +449,8 @@ class Builder extends BaseBuilder
     /**
      * Set the limit and offset for a given page.
      *
-     * @param  int  $page
-     * @param  int  $perPage
+     * @param  int $page
+     * @param  int $perPage
      * @return \Illuminate\Database\Query\Builder|static
      */
     public function forPage($page, $perPage = 15)
@@ -385,7 +475,7 @@ class Builder extends BaseBuilder
         foreach ($values as $key => $value) {
             // As soon as we find a value that is not an array we assume the user is
             // inserting a single document.
-            if (! is_array($value) || is_string($key)) {
+            if (!is_array($value) || is_string($key)) {
                 $batch = false;
                 break;
             }
@@ -395,7 +485,7 @@ class Builder extends BaseBuilder
             $this->useKeys(Helper::getUniqueId($this->type));
         }
 
-        if ($batch){
+        if ($batch) {
             foreach ($values as &$value) {
                 $value[Helper::TYPE_NAME] = $this->type;
                 $key = Helper::getUniqueId($this->type);
@@ -412,16 +502,16 @@ class Builder extends BaseBuilder
     /**
      * Insert a new record and get the value of the primary key.
      *
-     * @param  array   $values
-     * @param  string  $sequence
+     * @param  array $values
+     * @param  string $sequence
      * @return int
      */
-    public function insertGetId(array $values, $sequence = NULL)
+    public function insertGetId(array $values, $sequence = null)
     {
-        if (!is_null($sequence) && isset($values[$sequence])){
-            $this->useKeys((string)$values[ $sequence]);
+        if (!is_null($sequence) && isset($values[$sequence])) {
+            $this->useKeys((string)$values[$sequence]);
         } elseif (isset($values['_id'])) {
-            $this->useKeys((string)$values[ '_id']);
+            $this->useKeys((string)$values['_id']);
         }
         $this->insert($values);
         return $this->keys;
@@ -430,8 +520,8 @@ class Builder extends BaseBuilder
     /**
      * Get an array with the values of a given column.
      *
-     * @param  string  $column
-     * @param  string|null  $key
+     * @param  string $column
+     * @param  string|null $key
      * @return array
      */
     public function pluck($column, $key = null)
@@ -441,7 +531,7 @@ class Builder extends BaseBuilder
         // Convert ObjectID's to strings
         if ($key == '_id') {
             $results = $results->map(function ($item) {
-                $item['_id'] = (string) $item['_id'];
+                $item['_id'] = (string)$item['_id'];
                 return $item;
             });
         }
@@ -462,8 +552,8 @@ class Builder extends BaseBuilder
      * Get an array with the values of a given column.
      *
      * @deprecated
-     * @param  string  $column
-     * @param  string  $key
+     * @param  string $column
+     * @param  string $key
      * @return array
      */
     public function lists($column, $key = null)
@@ -474,8 +564,10 @@ class Builder extends BaseBuilder
     /**
      * Append one or more values to an array.
      *
-     * @param  mixed   $column
-     * @param  mixed   $value
+     * @param  mixed $column
+     * @param  mixed $value
+     * @param bool $unique
+     *
      * @return int
      */
     public function push($column, $value = null, $unique = false)
@@ -489,31 +581,47 @@ class Builder extends BaseBuilder
         } else {
             $obj->value->{$column}[] = $value;
         }
-
-        $array = array_map('json_encode', $obj->value->{$column});
-        $array = array_unique($array);
-        $obj->value->{$column} = array_map('json_decode', $array);
-
+        if ($unique) {
+            $array = array_map('json_encode', $obj->value->{$column});
+            $array = array_unique($array);
+            $obj->value->{$column} = array_map('json_decode', $array);
+        }
         return $this->connection->getCouchbaseBucket()->upsert($this->keys, $obj->value);
     }
 
     /**
      * Remove one or more values from an array.
      *
-     * @param  mixed   $column
-     * @param  mixed   $value
+     * @param  mixed $column
+     * @param  mixed $value
+     *
      * @return int
      */
     public function pull($column, $value = null)
     {
-        $obj = $this->connection->getCouchbaseBucket()->get($this->keys);
+        try {
+            $obj = $this->connection->getCouchbaseBucket()->get($this->keys);
+        } catch (Exception $e) {
+            if ($e->getCode() === COUCHBASE_KEY_ENOENT) {
+                trigger_error('Tying to pull a value from non existing document ' . json_encode($this->keys) . '.',
+                    E_USER_WARNING);
+                return;
+            }
+            throw $e;
+        }
+
         if (!is_array($value)) {
             $value = [$value];
         }
-        $filtered = collect($obj->value->{$column})->reject(function ($val, $key) use ($value){
+        if (!isset($obj->value->{$column})) {
+            trigger_error('Tying to pull a value from non existing column ' . json_encode($column) . ' in document ' . json_encode($this->keys) . '.',
+                E_USER_WARNING);
+            return;
+        }
+        $filtered = collect($obj->value->{$column})->reject(function ($val, $key) use ($value) {
             $match = false;
             if (is_object($val)) {
-                foreach($value AS $matchKey => $matchValue) {
+                foreach ($value AS $matchKey => $matchValue) {
                     if ($val->{$matchKey} === $value[$matchKey]) {
                         $match = true;
                     }
@@ -532,14 +640,15 @@ class Builder extends BaseBuilder
     /**
      * Remove all of the expressions from a list of bindings.
      *
-     * @param  array  $bindings
+     * @param  array $bindings
      * @return array
      */
     protected function cleanBindings(array $bindings)
     {
-        return array_values(array_filter(parent::cleanBindings($bindings), function ($binding) {
-            return !($binding instanceof MissingValue);
-        }));
+        return array_values(array_filter(parent::cleanBindings($bindings),
+            function ($binding) {
+                return !($binding instanceof MissingValue);
+            }));
     }
 
     /**
@@ -550,7 +659,7 @@ class Builder extends BaseBuilder
      */
     public function drop($columns)
     {
-        if (! is_array($columns)) {
+        if (!is_array($columns)) {
             $columns = [$columns];
         }
 
@@ -575,21 +684,9 @@ class Builder extends BaseBuilder
      */
     protected function runSelect()
     {
-        if ($this->columns === ['*']) {
-            $this->columns = [$this->connection->getBucketName().'.*'];
-        }
-        if ($this->columns === [$this->connection->getBucketName().'.*'] || in_array('_id', $this->columns)) {
-            $this->columns[] = 'meta('.$this->connection->getBucketName().').id as _id';
-            $this->columns = array_diff($this->columns, ['_id']);
-        }
-        for($i=0; $i<count($this->wheres); $i++) {
-            if (array_key_exists('column', $this->wheres[$i]) === true && $this->wheres[$i]['column'][0] !== '`' && $this->wheres[$i]['column'] == 'build') {
-                $this->wheres[$i]['column'] = '`' . $this->wheres[$i]['column'] . '`';
-            }
-        }
         return parent::runSelect();
     }
-    
+
     /**
      * Run the query as a "select" statement against the connection.
      *
@@ -597,20 +694,10 @@ class Builder extends BaseBuilder
      */
     protected function runSelectWithMeta()
     {
-        if ($this->columns === ['*']) {
-            $this->columns = [$this->connection->getBucketName().'.*'];
-        }
-        if ($this->columns === [$this->connection->getBucketName().'.*'] || in_array('_id', $this->columns)) {
-            $this->columns[] = 'meta('.$this->connection->getBucketName().').id as _id';
-            $this->columns = array_diff($this->columns, ['_id']);
-        }
-        for($i=0; $i<count($this->wheres); $i++) {
-            if (array_key_exists('column', $this->wheres[$i]) === true && $this->wheres[$i]['column'][0] !== '`' && $this->wheres[$i]['column'] == 'build') {
-                $this->wheres[$i]['column'] = '`' . $this->wheres[$i]['column'] . '`';
-            }
-        }
         return $this->connection->selectWithMeta(
-            $this->toSql(), $this->getBindings(), ! $this->useWritePdo
+            $this->toSql(),
+            $this->getBindings(),
+            !$this->useWritePdo
         );
     }
 
@@ -628,10 +715,10 @@ class Builder extends BaseBuilder
     /**
      * Add a FOR ... IN query
      *
-     * @param  string  $column
-     * @param  mixed   $value
-     * @param  string  $alias
-     * @param  array   $values
+     * @param  string $column
+     * @param  mixed $value
+     * @param  string $alias
+     * @param  array $values
      * @return \Illuminate\Database\Query\Builder|static
      *
      * @throws \InvalidArgumentException
@@ -646,10 +733,10 @@ class Builder extends BaseBuilder
     /**
      * Add a basic where clause to the query.
      *
-     * @param  string  $column
-     * @param  string  $operator
-     * @param  mixed   $value
-     * @param  string  $boolean
+     * @param  string $column
+     * @param  string $operator
+     * @param  mixed $value
+     * @param  string $boolean
      * @return \Illuminate\Database\Query\Builder|static
      *
      * @throws \InvalidArgumentException
@@ -657,10 +744,7 @@ class Builder extends BaseBuilder
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
         if ($column === '_id') {
-            //$column = 'meta('.$this->connection->getBucketName().').id';
-            $value = func_num_args() == 2 ? $operator : $value;
-            $this->useKeys($value);
-            return $this;
+            $column = $this->grammar->getMetaIdExpression($this);
         }
         return parent::where($column, $operator, $value, $boolean);
     }
@@ -668,20 +752,20 @@ class Builder extends BaseBuilder
     /**
      * Add a "where null" clause to the query.
      *
-     * @param  string  $column
-     * @param  string  $boolean
-     * @param  bool    $not
+     * @param  string $column
+     * @param  string $boolean
+     * @param  bool $not
      * @return \Illuminate\Database\Query\Builder|static
      */
     public function whereNull($column, $boolean = 'and', $not = false)
     {
         if ($column === '_id') {
-            if($not) {
+            if ($not) {
                 // the meta().id of a document is never null
                 // so where condition "meta().id is not null" makes no changes to the result
                 return $this;
             }
-            $column = 'meta('.$this->connection->getBucketName().').id';
+            $column = $this->grammar->getMetaIdExpression($this);
         }
         return parent::whereNull($column, $boolean, $not);
     }
@@ -689,7 +773,7 @@ class Builder extends BaseBuilder
     /**
      * Set custom options for the query.
      *
-     * @param  array  $options
+     * @param  array $options
      * @return $this
      */
     public function options(array $options)
@@ -715,8 +799,8 @@ class Builder extends BaseBuilder
     /**
      * Handle dynamic method calls into the method.
      *
-     * @param  string  $method
-     * @param  array   $parameters
+     * @param  string $method
+     * @param  array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)

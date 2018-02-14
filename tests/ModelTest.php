@@ -288,7 +288,7 @@ class ModelTest extends TestCase
     /**
      * @group testPrimaryKey
      */
-    public function testPrimaryKey()
+    public function testPrimaryKeyUsingFind()
     {
         $user = new User;
         $this->assertEquals('_id', $user->getKeyName());
@@ -307,7 +307,7 @@ class ModelTest extends TestCase
         $this->assertEquals('A Game of Thrones', $check->getKey());
         $this->assertEquals('A Game of Thrones', $check->title);
     }
-    
+
     /**
      * @group testPrimaryKeyUsingWhere
      */
@@ -316,21 +316,50 @@ class ModelTest extends TestCase
         $book = new Book;
         $book->title = 'False Book';
         $book->save();
-        
+
         $book = new Book;
         $this->assertEquals('title', $book->getKeyName());
-    
+
         $book->title = 'A Game of Thrones Where';
         $book->author = 'George R. R. Martin Where';
         $book->save();
-        
+
         $this->assertEquals('A Game of Thrones Where', $book->getKey());
-        
+
         $check = Book::where('_id', 'A Game of Thrones Where')->first();
         $this->assertEquals('title', $check->getKeyName());
         $this->assertEquals('A Game of Thrones Where', $check->getKey());
         $this->assertEquals('A Game of Thrones Where', $check->title);
-    
+
+        $check = Book::where('title', 'A Game of Thrones Where')->first();
+        $this->assertEquals('title', $check->getKeyName());
+        $this->assertEquals('A Game of Thrones Where', $check->getKey());
+        $this->assertEquals('A Game of Thrones Where', $check->title);
+    }
+
+    /**
+     * @group testPrimaryKeyUsingWhere
+     */
+    public function testPrimaryKeyUsingUseKeys()
+    {
+        $book = new Book;
+        $book->title = 'False Book';
+        $book->save();
+
+        $book = new Book;
+        $this->assertEquals('title', $book->getKeyName());
+
+        $book->title = 'A Game of Thrones Where';
+        $book->author = 'George R. R. Martin Where';
+        $book->save();
+
+        $this->assertEquals('A Game of Thrones Where', $book->getKey());
+
+        $check = Book::useKeys('A Game of Thrones Where')->first();
+        $this->assertEquals('title', $check->getKeyName());
+        $this->assertEquals('A Game of Thrones Where', $check->getKey());
+        $this->assertEquals('A Game of Thrones Where', $check->title);
+
         $check = Book::where('title', 'A Game of Thrones Where')->first();
         $this->assertEquals('title', $check->getKeyName());
         $this->assertEquals('A Game of Thrones Where', $check->getKey());

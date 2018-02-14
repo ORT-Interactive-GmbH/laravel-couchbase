@@ -7,3 +7,5 @@ composer.lock
 *.sublime-workspace
 *.project
 .idea/
+sql-log.sql
+.env
