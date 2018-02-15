@@ -19,8 +19,8 @@ class HasOne extends EloquentHasOne
     /**
      * Add the constraints for a relationship query.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  \Illuminate\Database\Eloquent\Builder  $parent
+     * @param  \Illuminate\Database\Eloquent\Builder $query
+     * @param  \Illuminate\Database\Eloquent\Builder $parent
      * @param  array|mixed $columns
      * @return \Illuminate\Database\Eloquent\Builder
      */

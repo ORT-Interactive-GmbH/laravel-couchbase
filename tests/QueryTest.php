@@ -190,9 +190,9 @@ class QueryTest extends TestCase
         $users = User::where(function ($query) {
             $query->where('age', 35)->orWhere('age', 33);
         })
-        ->where(function ($query) {
-            $query->where('name', 'John Doe')->orWhere('name', 'Jane Doe');
-        })->get();
+            ->where(function ($query) {
+                $query->where('name', 'John Doe')->orWhere('name', 'Jane Doe');
+            })->get();
 
         $this->assertEquals(2, count($users));
     }
@@ -202,40 +202,40 @@ class QueryTest extends TestCase
     {
         $users = User::where('title', 'admin')->orWhere(function ($query) {
             $query->where('name', 'Tommy Toe')
-                      ->orWhere('name', 'Error');
+                ->orWhere('name', 'Error');
         })->get();
         $this->assertEquals(5, count($users));
 
         $users = User::where('title', 'user')->where(function ($query) {
             $query->where('age', 35)
-                      ->orWhere('name', 'like', '%Harry%');
+                ->orWhere('name', 'like', '%Harry%');
         })->get();
         $this->assertEquals(2, count($users));
 
         $users = User::where('age', 35)->orWhere(function ($query) {
             $query->where('title', 'admin')
-                      ->orWhere('name', 'Error');
+                ->orWhere('name', 'Error');
         })->get();
         $this->assertEquals(5, count($users));
 
         $users = User::whereNull('deleted_at')
-                ->where('title', 'admin')
-                ->where(function ($query) {
-                    $query->where('age', '>', 15)
-                          ->orWhere('name', 'Harry Hoe');
-                })
-                ->get();
+            ->where('title', 'admin')
+            ->where(function ($query) {
+                $query->where('age', '>', 15)
+                    ->orWhere('name', 'Harry Hoe');
+            })
+            ->get();
         $this->assertEquals(3, $users->count());
 
         $users = User::whereNull('deleted_at')
-                ->where(function ($query) {
-                    $query->where('name', 'Harry Hoe')
-                          ->orWhere(function ($query) {
-                              $query->where('age', '>', 15)
-                                    ->where('title', '<>', 'admin');
-                          });
-                })
-                ->get();
+            ->where(function ($query) {
+                $query->where('name', 'Harry Hoe')
+                    ->orWhere(function ($query) {
+                        $query->where('age', '>', 15)
+                            ->where('title', '<>', 'admin');
+                    });
+            })
+            ->get();
 
         $this->assertEquals(5, $users->count());
     }

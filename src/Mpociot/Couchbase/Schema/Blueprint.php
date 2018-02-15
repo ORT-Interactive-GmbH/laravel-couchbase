@@ -15,10 +15,10 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * Specify an index for the collection.
      *
-     * @param  string|array  $columns
-     * @param  array         $options
-     * @param  string  $name
-     * @param  string|null  $algorithm
+     * @param  string|array $columns
+     * @param  array $options
+     * @param  string $name
+     * @param  string|null $algorithm
      * @return Blueprint
      */
     public function index($columns = null, $name = null, $algorithm = null, $options = [])
@@ -29,10 +29,10 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * Specify the primary key(s) for the table.
      *
-     * @param  string|array  $columns
-     * @param  string  $name
-     * @param  string|null  $algorithm
-     * @param  array         $options
+     * @param  string|array $columns
+     * @param  string $name
+     * @param  string|null $algorithm
+     * @param  array $options
      * @return \Illuminate\Support\Fluent
      */
     public function primary($columns = null, $name = null, $algorithm = null, $options = [])
@@ -43,7 +43,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * Indicate that the given index should be dropped.
      *
-     * @param  string|array  $columns
+     * @param  string|array $columns
      * @return Blueprint
      */
     public function dropIndex($columns = null)
@@ -54,10 +54,10 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * Specify a unique index for the collection.
      *
-     * @param  string|array  $columns
-     * @param  string  $name
-     * @param  string|null  $algorithm
-     * @param  array         $options
+     * @param  string|array $columns
+     * @param  string $name
+     * @param  string|null $algorithm
+     * @param  array $options
      * @return Blueprint
      */
     public function unique($columns = null, $name = null, $algorithm = null, $options = [])
@@ -88,9 +88,9 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * Add a new column to the blueprint.
      *
-     * @param  string  $type
-     * @param  string  $name
-     * @param  array   $parameters
+     * @param  string $type
+     * @param  string $name
+     * @param  array $parameters
      * @return Blueprint
      */
     public function addColumn($type, $name, array $parameters = [])

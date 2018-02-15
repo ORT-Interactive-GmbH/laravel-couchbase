@@ -206,8 +206,8 @@ class Grammar extends BaseGrammar
 
     /**
      * @param \Illuminate\Database\Query\Expression|string $value
-     * @param bool                                         $prefixAlias
-     * @param bool                                         $identifier
+     * @param bool $prefixAlias
+     * @param bool $identifier
      * @return string
      */
     public function wrap($value, $prefixAlias = false, $identifier = false)
@@ -246,7 +246,7 @@ class Grammar extends BaseGrammar
     public function wrapArray(array $values, $prefixAlias = false, $identifiers = false)
     {
         $ret = [];
-        foreach($values as $value) {
+        foreach ($values as $value) {
             $ret[] = $this->wrap($value, $prefixAlias, $identifiers);
         }
         return $ret;
@@ -275,8 +275,8 @@ class Grammar extends BaseGrammar
             return $value;
         }
 
-        if('`' === $value[0] && '`' === substr($value, -1)) {
-            if(substr_count($value, '`') % 2 === 0) {
+        if ('`' === $value[0] && '`' === substr($value, -1)) {
+            if (substr_count($value, '`') % 2 === 0) {
                 return $value;
             }
             return $this->wrapIdentifier(substr($value, 1, -1));
@@ -287,7 +287,7 @@ class Grammar extends BaseGrammar
 
     /**
      * @param string $value
-     * @param bool   $prefixAlias
+     * @param bool $prefixAlias
      * @return string
      */
     protected function wrapAliasedIdentifier($value, $prefixAlias = false)
@@ -333,7 +333,8 @@ class Grammar extends BaseGrammar
      * @param  BaseBuilder $query
      * @return string
      */
-    public function compileSelect(BaseBuilder $query) {
+    public function compileSelect(BaseBuilder $query)
+    {
         // If the query does not have any columns set, we'll set the columns to the
         // * character to just get all of the columns from the database. Then we
         // can build the query and concatenate all the pieces together as one.
@@ -342,7 +343,8 @@ class Grammar extends BaseGrammar
         if (is_null($query->columns) || $query->columns === ['*']) {
             $query->columns = [$this->wrapIdentifier($query->connection->getBucketName()) . '.*'];
         }
-        if ($query->columns === [$this->wrapIdentifier($query->connection->getBucketName()) . '.*'] || in_array('_id', $query->columns)) {
+        if ($query->columns === [$this->wrapIdentifier($query->connection->getBucketName()) . '.*'] || in_array('_id',
+                $query->columns)) {
             $query->columns[] = $this->getMetaIdExpression($query, true);
             $query->columns = array_diff($query->columns, ['_id']);
         }
@@ -361,9 +363,10 @@ class Grammar extends BaseGrammar
      * @param \Mpociot\Couchbase\Query\Builder $query
      * @return string
      */
-    protected function compileReturning(Builder $query) {
+    protected function compileReturning(Builder $query)
+    {
         $p = [];
-        foreach($query->returning as $t) {
+        foreach ($query->returning as $t) {
             $p[] = $this->wrap($t, false, true);
         }
         return implode(', ', $p);
@@ -373,7 +376,7 @@ class Grammar extends BaseGrammar
      * Compile a "where null" clause.
      *
      * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array                              $where
+     * @param  array $where
      * @return string
      */
     protected function whereNull(BaseBuilder $query, $where)
@@ -389,7 +392,7 @@ class Grammar extends BaseGrammar
      * Compile a "where in" clause.
      *
      * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array                              $where
+     * @param  array $where
      * @return string
      */
     protected function whereIn(BaseBuilder $query, $where)
@@ -412,15 +415,16 @@ class Grammar extends BaseGrammar
      * @param bool $withAsUnderscoreId
      * @return Expression
      */
-    public function getMetaIdExpression(BaseBuilder $query, $withAsUnderscoreId = false){
-        return new Expression('meta(' . $this->wrapIdentifier($query->getConnection()->getBucketName()) . ').`id`'.($withAsUnderscoreId ? ' as `_id`' : ''));
+    public function getMetaIdExpression(BaseBuilder $query, $withAsUnderscoreId = false)
+    {
+        return new Expression('meta(' . $this->wrapIdentifier($query->getConnection()->getBucketName()) . ').`id`' . ($withAsUnderscoreId ? ' as `_id`' : ''));
     }
 
     /**
      * Compile a "where not in" clause.
      *
      * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array                              $where
+     * @param  array $where
      * @return string
      */
     protected function whereNotIn(BaseBuilder $query, $where)
@@ -442,7 +446,7 @@ class Grammar extends BaseGrammar
      * Compile a "where in" clause.
      *
      * @param  \Illuminate\Database\Query\Builder $query
-     * @param  array                              $where
+     * @param  array $where
      * @return string
      */
     protected function whereAnyIn(BaseBuilder $query, $where)
@@ -467,7 +471,7 @@ class Grammar extends BaseGrammar
 
     /**
      * @param \Mpociot\Couchbase\Query\Builder $query
-     * @param array                            $values
+     * @param array $values
      * @return string
      */
     public function compileUnset(Builder $query, array $values)

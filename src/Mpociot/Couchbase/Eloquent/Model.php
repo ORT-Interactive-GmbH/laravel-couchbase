@@ -212,7 +212,7 @@ abstract class Model extends BaseModel
      * Set a given attribute on the model.
      *
      * @param  string $key
-     * @param  mixed  $value
+     * @param  mixed $value
      */
     public function setAttribute($key, $value)
     {
@@ -319,7 +319,7 @@ abstract class Model extends BaseModel
      * Remove one or more values from an array.
      *
      * @param  string $column
-     * @param  mixed  $values
+     * @param  mixed $values
      * @return mixed
      */
     public function pull($column, $values)
@@ -340,8 +340,8 @@ abstract class Model extends BaseModel
      * Append one or more values to the underlying attribute value and sync with original.
      *
      * @param  string $column
-     * @param  array  $values
-     * @param  bool   $unique
+     * @param  array $values
+     * @param  bool $unique
      */
     protected function pushAttributeValues($column, array $values, $unique = false)
     {
@@ -365,7 +365,7 @@ abstract class Model extends BaseModel
      * Remove one or more values to the underlying attribute value and sync with original.
      *
      * @param  string $column
-     * @param  array  $values
+     * @param  array $values
      */
     protected function pullAttributeValues($column, array $values)
     {
@@ -481,7 +481,7 @@ abstract class Model extends BaseModel
      * Handle dynamic method calls into the method.
      *
      * @param  string $method
-     * @param  array  $parameters
+     * @param  array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)

@@ -18,7 +18,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
     /**
      * Set the constraints for an eager load of the relation.
      *
-     * @param  array  $models
+     * @param  array $models
      */
     public function addEagerConstraints(array $models)
     {

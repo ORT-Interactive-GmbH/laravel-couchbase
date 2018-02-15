@@ -28,7 +28,7 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Hydrate the pivot table relationship on the models.
      *
-     * @param  array  $models
+     * @param  array $models
      */
     protected function hydratePivotRelation(array $models)
     {
@@ -38,7 +38,7 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Set the select clause for the relation query.
      *
-     * @param  array  $columns
+     * @param  array $columns
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     protected function getSelectColumns(array $columns = ['*'])
@@ -67,7 +67,7 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Set the constraints for an eager load of the relation.
      *
-     * @param  array  $models
+     * @param  array $models
      * @return void
      */
     public function addEagerConstraints(array $models)
@@ -84,7 +84,7 @@ class BelongsToMany extends EloquentBelongsToMany
     {
         $foreign = $this->getForeignKey();
 
-        $this->query->whereRaw('ARRAY_CONTAINS('.$foreign.', "'.$this->parent->getKey().'")');
+        $this->query->whereRaw('ARRAY_CONTAINS(' . $foreign . ', "' . $this->parent->getKey() . '")');
 
         return $this;
     }
@@ -92,9 +92,9 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Save a new model and attach it to the parent model.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @param  array  $joining
-     * @param  bool   $touch
+     * @param  \Illuminate\Database\Eloquent\Model $model
+     * @param  array $joining
+     * @param  bool $touch
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function save(Model $model, array $joining = [], $touch = true)
@@ -109,9 +109,9 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Create a new instance of the related model.
      *
-     * @param  array  $attributes
-     * @param  array  $joining
-     * @param  bool   $touch
+     * @param  array $attributes
+     * @param  array $joining
+     * @param  bool $touch
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function create(array $attributes = [], array $joining = [], $touch = true)
@@ -131,14 +131,16 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Sync the intermediate tables with a list of IDs or collection of models.
      *
-     * @param  array  $ids
-     * @param  bool   $detaching
+     * @param  array $ids
+     * @param  bool $detaching
      * @return array
      */
     public function sync($ids, $detaching = true)
     {
         $changes = [
-            'attached' => [], 'detached' => [], 'updated' => [],
+            'attached' => [],
+            'detached' => [],
+            'updated' => [],
         ];
 
         if ($ids instanceof Collection) {
@@ -157,7 +159,7 @@ class BelongsToMany extends EloquentBelongsToMany
 
         $records = $this->formatSyncList($ids);
 
-        if($current === null){
+        if ($current === null) {
             $current = [];
         }
         $detach = array_diff($current, array_keys($records));
@@ -172,8 +174,8 @@ class BelongsToMany extends EloquentBelongsToMany
         if ($detaching and count($detach) > 0) {
             $this->detach($detach);
 
-            $changes['detached'] = (array) array_map(function ($v) {
-                return is_numeric($v) ? (int) $v : (string) $v;
+            $changes['detached'] = (array)array_map(function ($v) {
+                return is_numeric($v) ? (int)$v : (string)$v;
             }, $detach);
         }
 
@@ -194,9 +196,9 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Update an existing pivot record on the table.
      *
-     * @param  mixed  $id
-     * @param  array  $attributes
-     * @param  bool   $touch
+     * @param  mixed $id
+     * @param  array $attributes
+     * @param  bool $touch
      */
     public function updateExistingPivot($id, array $attributes, $touch = true)
     {
@@ -206,9 +208,9 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Attach a model to the parent.
      *
-     * @param  mixed  $id
-     * @param  array  $attributes
-     * @param  bool   $touch
+     * @param  mixed $id
+     * @param  array $attributes
+     * @param  bool $touch
      */
     public function attach($id, array $attributes = [], $touch = true)
     {
@@ -233,7 +235,7 @@ class BelongsToMany extends EloquentBelongsToMany
         }
 
         // Attach the new ids to the parent model.
-        $this->parent->push($this->relatedKey, (array) $id, true);
+        $this->parent->push($this->relatedKey, (array)$id, true);
 
         if ($touch) {
             $this->touchIfTouching();
@@ -243,21 +245,21 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Detach models from the relationship.
      *
-     * @param  int|array  $ids
-     * @param  bool  $touch
+     * @param  int|array $ids
+     * @param  bool $touch
      * @return int
      */
     public function detach($ids = [], $touch = true)
     {
         if ($ids instanceof Model) {
-            $ids = (array) $ids->getKey();
+            $ids = (array)$ids->getKey();
         }
 
         $query = $this->newRelatedQuery();
         // If associated IDs were passed to the method we will only delete those
         // associations, otherwise all of the association ties will be broken.
         // We'll return the numbers of affected rows when we do the deletes.
-        $ids = (array) $ids;
+        $ids = (array)$ids;
 
         // Detach all ids from the parent model.
         $this->parent->pull($this->relatedKey, $ids);
@@ -283,7 +285,7 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Build model dictionary keyed by the relation's foreign key.
      *
-     * @param  \Illuminate\Database\Eloquent\Collection  $results
+     * @param  \Illuminate\Database\Eloquent\Collection $results
      * @return array
      */
     protected function buildDictionary(Collection $results)
@@ -348,14 +350,14 @@ class BelongsToMany extends EloquentBelongsToMany
      * The original function has been renamed to formatRecordsList since Laravel 5.3
      *
      * @deprecated
-     * @param  array  $records
+     * @param  array $records
      * @return array
      */
     protected function formatSyncList(array $records)
     {
         $results = [];
         foreach ($records as $id => $attributes) {
-            if (! is_array($attributes)) {
+            if (!is_array($attributes)) {
                 list($id, $attributes) = [$attributes, []];
             }
             $results[$id] = $attributes;

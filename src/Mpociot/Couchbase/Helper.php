@@ -15,6 +15,6 @@ class Helper
 
     public static function getUniqueId($praefix = null)
     {
-        return (($praefix !== null) ? $praefix.'::' : '').uniqid();
+        return (($praefix !== null) ? $praefix . '::' : '') . uniqid();
     }
 }

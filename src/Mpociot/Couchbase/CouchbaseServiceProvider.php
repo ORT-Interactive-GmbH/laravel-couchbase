@@ -21,8 +21,8 @@ class CouchbaseServiceProvider extends ServiceProvider
     public function register()
     {
         // Add database driver.
-        $this->app->singleton('couchbase.connection', function($app){
-            $connectionName = config('database.connections.'.config('database.default'));
+        $this->app->singleton('couchbase.connection', function ($app) {
+            $connectionName = config('database.connections.' . config('database.default'));
             return new Connection($connectionName);
         });
         $this->app->resolving('db', function ($db) {
