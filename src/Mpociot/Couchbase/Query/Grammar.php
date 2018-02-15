@@ -557,7 +557,7 @@ class Grammar extends BaseGrammar
                 if(!in_array($index['type'], [self::INDEX_TYPE_VIEW, self::INDEX_TYPE_GSI])) {
                     throw new Exception('Unsupported index type '.json_encode($index['type']).'.');
                 }
-                return $this->wrapIdentifier($index['name']).' USING '.$index['type'];
+                return $this->wrapValue($index['name']).' USING '.$index['type'];
             }, $query->indexes)).')';
         }
 
