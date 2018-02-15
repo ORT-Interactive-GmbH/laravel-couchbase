@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 use Mpociot\Couchbase\Eloquent\Model as Eloquent;
 use Mpociot\Couchbase\Eloquent\SoftDeletes;

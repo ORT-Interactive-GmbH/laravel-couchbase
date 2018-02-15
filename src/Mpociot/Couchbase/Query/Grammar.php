@@ -1,4 +1,6 @@
-<?php namespace Mpociot\Couchbase\Query;
+<?php declare(strict_types=1);
+
+namespace Mpociot\Couchbase\Query;
 
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
@@ -223,10 +225,9 @@ class Grammar extends BaseGrammar
     /**
      * @param \Illuminate\Database\Query\Expression|string $value
      * @param bool $prefixAlias
-     * @param bool $identifier
      * @return string
      */
-    public function wrap($value, $prefixAlias = false, $identifier = false)
+    public function wrap($value, $prefixAlias = false)
     {
         if ($this->isExpression($value)) {
             return $this->getValue($value);
@@ -237,55 +238,27 @@ class Grammar extends BaseGrammar
         }
 
         if ($value[0] === '`' && $value[0] === substr($value, -1)) {
-            return $this->wrapIdentifier($value);
+            return $this->wrapValue($value);
         } elseif ($value === '*') {
-            return $this->wrapIdentifier($value);
+            return $this->wrapValue($value);
         }
 
         if (false !== strpos($value, '.')) {
-            return $this->wrapIdentifierSegments(explode('.', $value));
+            return $this->wrapSegments(explode('.', $value));
         }
 
         if (strpos(strtolower($value), ' as ') !== false) {
-            return $this->wrapAliasedIdentifier($value, $prefixAlias);
+            return $this->wrapAliasedValue($value, $prefixAlias);
         }
 
-        return $this->wrapIdentifier($value);
-    }
-
-    /**
-     * @param array $values
-     * @param bool $prefixAlias
-     * @param bool $identifiers
-     * @return array
-     */
-    public function wrapArray(array $values, $prefixAlias = false, $identifiers = false)
-    {
-        $ret = [];
-        foreach ($values as $value) {
-            $ret[] = $this->wrap($value, $prefixAlias, $identifiers);
-        }
-        return $ret;
-    }
-
-    /**
-     * @param \Illuminate\Database\Query\Expression|string $table
-     * @return string
-     */
-    public function wrapTable($table)
-    {
-        if (!$this->isExpression($table)) {
-            return $this->wrap($this->tablePrefix . $table, true, true);
-        }
-
-        return $this->getValue($table);
+        return $this->wrapValue($value);
     }
 
     /**
      * @param string $value
      * @return string
      */
-    public function wrapIdentifier($value)
+    public function wrapValue($value)
     {
         if ($value === '*') {
             return $value;
@@ -295,38 +268,19 @@ class Grammar extends BaseGrammar
             if (substr_count($value, '`') % 2 === 0) {
                 return $value;
             }
-            return $this->wrapIdentifier(substr($value, 1, -1));
+            return $this->wrapValue(substr($value, 1, -1));
         }
 
         return '`' . str_replace('`', '``', $value) . '`';
     }
 
     /**
-     * @param string $value
-     * @param bool $prefixAlias
-     * @return string
-     */
-    protected function wrapAliasedIdentifier($value, $prefixAlias = false)
-    {
-        $segments = preg_split('/\s+as\s+/i', $value);
-
-        // If we are wrapping a table we need to prefix the alias with the table prefix
-        // as well in order to generate proper syntax. If this is a column of course
-        // no prefix is necessary. The condition will be true when from wrapTable.
-        if ($prefixAlias) {
-            $segments[1] = $this->tablePrefix . $segments[1];
-        }
-
-        return $this->wrap($segments[0], false, true) . ' as ' . $this->wrap($segments[1], false, true);
-    }
-
-    /**
      * @param array $segments
      * @return string
      */
-    protected function wrapIdentifierSegments($segments)
+    protected function wrapSegments($segments)
     {
-        return implode('.', array_map([$this, 'wrapIdentifier'], $segments));
+        return implode('.', array_map([$this, 'wrapValue'], $segments));
     }
 
     /**
@@ -357,9 +311,9 @@ class Grammar extends BaseGrammar
         $original = $query->columns;
 
         if (is_null($query->columns) || $query->columns === ['*']) {
-            $query->columns = [$this->wrapIdentifier($query->connection->getBucketName()) . '.*'];
+            $query->columns = [$this->wrapTable($query->connection->getBucketName()) . '.*'];
         }
-        if ($query->columns === [$this->wrapIdentifier($query->connection->getBucketName()) . '.*'] || in_array('_id',
+        if ($query->columns === [$this->wrapTable($query->connection->getBucketName()) . '.*'] || in_array('_id',
                 $query->columns)) {
             $query->columns[] = $this->getMetaIdExpression($query, true);
             $query->columns = array_diff($query->columns, ['_id']);
@@ -381,11 +335,7 @@ class Grammar extends BaseGrammar
      */
     protected function compileReturning(Builder $query)
     {
-        $p = [];
-        foreach ($query->returning as $t) {
-            $p[] = $this->wrap($t, false, true);
-        }
-        return implode(', ', $p);
+        return implode(', ', $this->wrapArray($query->returning));
     }
 
     /**
@@ -398,9 +348,9 @@ class Grammar extends BaseGrammar
     protected function whereNull(BaseBuilder $query, $where)
     {
         return '(' .
-            $this->wrap($where['column'], false, true) .
+            $this->wrap($where['column']) .
             ' is null OR ' .
-            $this->wrap($where['column'], false, true) .
+            $this->wrap($where['column']) .
             ' is MISSING )';
     }
 
@@ -427,17 +377,13 @@ class Grammar extends BaseGrammar
      */
     protected function whereIn(BaseBuilder $query, $where)
     {
-        if (empty($where['values'])) {
-            return 'false';
-        }
-
-        $values = $this->parameterize($where['values']);
+        $values = $this->parameterize($where['values'] ?? []);
 
         if (trim($where['column'], "`") === '_id') {
             $where['column'] = $this->getMetaIdExpression($query);
         }
 
-        return $this->wrap($where['column'], false, true) . ' in [' . $values . ']';
+        return $this->wrap($where['column']) . ' in [' . $values . ']';
     }
 
     /**
@@ -447,7 +393,7 @@ class Grammar extends BaseGrammar
      */
     public function getMetaIdExpression(BaseBuilder $query, $withAsUnderscoreId = false)
     {
-        return new Expression('meta(' . $this->wrapIdentifier($query->getConnection()->getBucketName()) . ').`id`' . ($withAsUnderscoreId ? ' as `_id`' : ''));
+        return new Expression('meta(' . $this->wrapTable($query->getConnection()->getBucketName()) . ').`id`' . ($withAsUnderscoreId ? ' as `_id`' : ''));
     }
 
     /**
@@ -459,44 +405,36 @@ class Grammar extends BaseGrammar
      */
     protected function whereNotIn(BaseBuilder $query, $where)
     {
-        if (empty($where['values'])) {
-            return 'true';
-        }
-
-        $values = $this->parameterize($where['values']);
+        $values = $this->parameterize($where['values'] ?? []);
 
         if (trim($where['column'], "`") === '_id') {
             $where['column'] = $this->getMetaIdExpression($query);
         }
 
-        return $this->wrap($where['column'], false, true) . ' not in [' . $values . ']';
+        return $this->wrap($where['column']) . ' not in [' . $values . ']';
     }
 
     /**
      * Compile a "where in" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  Builder $query
      * @param  array $where
      * @return string
      */
-    protected function whereAnyIn(BaseBuilder $query, $where)
+    protected function whereAnyIn(Builder $query, $where)
     {
-        if (empty($where['values'])) {
-            return '0 = 1';
-        }
+        $values = $this->parameterize($where['values'] ?? []);
 
-        $values = $this->parameterize($where['values']);
-
-        $colIdentifier = str_random(5);
+        $colIdentifier = str_random(32);
         return 'ANY ' .
-            $this->wrap($colIdentifier, false, true) .
+            $this->wrapValue($colIdentifier) .
             ' IN ' .
-            $this->wrap($where['column'], false, true) .
+            $this->wrap($where['column']) .
             ' SATISFIES ' .
-            $this->wrap($colIdentifier, false, true) .
-            ' IN ["' .
+            $this->wrapValue($colIdentifier) .
+            ' IN [' .
             $values .
-            '"]';
+            '] END';
     }
 
     /**
@@ -513,11 +451,7 @@ class Grammar extends BaseGrammar
         // returning-clause
         $returning = $this->compileReturning($query);
 
-        $columns = [];
-
-        foreach ($values as $key) {
-            $columns[] = $this->wrap($key, false, true);
-        }
+        $columns = $this->wrapArray($values);
 
         $columns = implode(', ', $columns);
 
@@ -565,9 +499,9 @@ class Grammar extends BaseGrammar
 
         foreach ($values as $key => $value) {
             if ($value instanceof MissingValue) {
-                $unsetColumns[] = $this->wrap($key, false, true);
+                $unsetColumns[] = $this->wrap($key);
             } else {
-                $columns[] = $this->wrap($key, false, true) . ' = ' . $this->parameter($value);
+                $columns[] = $this->wrap($key) . ' = ' . $this->parameter($value);
             }
         }
 
@@ -579,15 +513,15 @@ class Grammar extends BaseGrammar
         $forIns = [];
         foreach ($query->forIns as $forIn) {
             foreach ($forIn['values'] as $key => $value) {
-                $forIns[] = $this->wrap($key, false, true) .
+                $forIns[] = $this->wrap($key) .
                     ' = ' .
                     $this->wrapData($value) .
                     ' FOR ' .
-                    $this->wrap(str_singular($forIn['alias']), false, true) .
+                    $this->wrap(str_singular($forIn['alias'])) .
                     ' IN ' .
-                    $this->wrap($forIn['alias'], false, true) .
+                    $this->wrap($forIn['alias']) .
                     ' WHEN ' .
-                    $this->wrap($forIn['column'], false, true) .
+                    $this->wrap($forIn['column']) .
                     '= ' . $this->wrapData($forIn['value']) .
                     ' END';
             }

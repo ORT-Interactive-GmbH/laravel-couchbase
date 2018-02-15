@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 class TestCase extends Orchestra\Testbench\TestCase
 {
@@ -50,7 +50,12 @@ class TestCase extends Orchestra\Testbench\TestCase
 
         \DB::listen(function (\Illuminate\Database\Events\QueryExecuted $sql) use (&$fh) {
             file_put_contents(__DIR__ . '/../sql-log.sql', $sql->sql . ";\n", FILE_APPEND);
-            file_put_contents(__DIR__ . '/../sql-log.sql', '-- ' . json_encode($sql->bindings) . "\n\n", FILE_APPEND);
+            file_put_contents(__DIR__ . '/../sql-log.sql', '-- ' . json_encode($sql->bindings) . "\n", FILE_APPEND);
+            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 12);
+            $backtrace = array_slice($backtrace, 5);
+            file_put_contents(__DIR__ . '/../sql-log.sql', '-- ' . implode("\n-- ", array_map(function($trace){
+                return ($trace['class']??'').($trace['type']??'').($trace['function']??'').'() called at ['.($trace['file']??'').':'.($trace['line']??'').']';
+                }, $backtrace)) . "\n\n", FILE_APPEND);
         });
     }
 

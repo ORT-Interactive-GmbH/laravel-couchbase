@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 use Mpociot\Couchbase\Query\Builder as Query;
 use Mpociot\Couchbase\Query\Grammar;
@@ -456,7 +456,7 @@ class QueryBuilderTest extends TestCase
     {
         /** @var Query $query */
         $query = DB::table('table1')->where('a', '=', 'b');
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table1" and `a` = "b"',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table1" and `a` = "b"',
             $this->queryToSql($query));
     }
 
@@ -467,7 +467,7 @@ class QueryBuilderTest extends TestCase
     {
         /** @var Query $query */
         $query = DB::table('table2')->where('a', 'b');
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table2" and `a` = "b"',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table2" and `a` = "b"',
             $this->queryToSql($query));
     }
 
@@ -480,7 +480,7 @@ class QueryBuilderTest extends TestCase
         $query = DB::table('table3')->where(function (Query $query) {
             $query->where('a', 'b');
         });
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table3" and (`a` = "b")',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table3" and (`a` = "b")',
             $this->queryToSql($query));
     }
 
@@ -491,10 +491,10 @@ class QueryBuilderTest extends TestCase
     {
         /** @var Query $query */
         $query = DB::table('table4')->where(['a' => 'b']);
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table4" and (`a` = "b")',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table4" and (`a` = "b")',
             $this->queryToSql($query));
         $query = DB::table('table5')->where(['a' => 'b', 'c' => 'd']);
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table5" and (`a` = "b" and `c` = "d")',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table5" and (`a` = "b" and `c` = "d")',
             $this->queryToSql($query));
     }
 
@@ -505,7 +505,7 @@ class QueryBuilderTest extends TestCase
     {
         /** @var Query $query */
         $query = DB::table('table6')->where('password', 'foobar');
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and `password` = "foobar"',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and `password` = "foobar"',
             $this->queryToSql($query));
     }
 
@@ -516,7 +516,7 @@ class QueryBuilderTest extends TestCase
     {
         /** @var Query $query */
         $query = DB::table('table6')->where('`foo`', 'bar');
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and `foo` = "bar"',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and `foo` = "bar"',
             $this->queryToSql($query));
     }
 
@@ -526,7 +526,7 @@ class QueryBuilderTest extends TestCase
     public function testWhereEscapedColumnWithBacktick()
     {
         $query = DB::table('table6')->where('`foo`bar`', 'bar');
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and `foo``bar` = "bar"',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and `foo``bar` = "bar"',
             $this->queryToSql($query));
     }
 
@@ -536,7 +536,7 @@ class QueryBuilderTest extends TestCase
     public function testWhereColumnWithBacktickEnd()
     {
         $query = DB::table('table6')->where('foo`', 'bar');
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and `foo``` = "bar"',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and `foo``` = "bar"',
             $this->queryToSql($query));
     }
 
@@ -546,7 +546,7 @@ class QueryBuilderTest extends TestCase
     public function testWhereColumnWithBacktickInside()
     {
         $query = DB::table('table6')->where('foo`bar', 'bar');
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and `foo``bar` = "bar"',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and `foo``bar` = "bar"',
             $this->queryToSql($query));
     }
 
@@ -556,7 +556,7 @@ class QueryBuilderTest extends TestCase
     public function testWhereColumnWithBacktickBeginning()
     {
         $query = DB::table('table6')->where('`foo', 'bar');
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and ```foo` = "bar"',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and ```foo` = "bar"',
             $this->queryToSql($query));
     }
 
@@ -566,7 +566,7 @@ class QueryBuilderTest extends TestCase
     public function testWhereColumnWithBrackets()
     {
         $query = DB::table('table6')->where('foo(abc)', 'foobar');
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and `foo(abc)` = "foobar"',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and `foo(abc)` = "foobar"',
             $this->queryToSql($query));
     }
 
@@ -576,7 +576,7 @@ class QueryBuilderTest extends TestCase
     public function testWhereColumnUnderscoreId()
     {
         $query = DB::table('table6')->where('_id', 'foobar');
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and meta(`' . $query->from . '`).`id` = "foobar"',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and meta(`' . $query->from . '`).`id` = "foobar"',
             $this->queryToSql($query));
     }
 
@@ -585,11 +585,11 @@ class QueryBuilderTest extends TestCase
      */
     public function testWhereNestedRaw()
     {
-        $query = DB::table('table6')->where(function($query){
+        $query = DB::table('table6')->where(function ($query) {
             $query->whereRaw('meta().id = "abc"')
                 ->orWhere(DB::raw('substr(`a`, 0, 3)'), "def");
         });
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and (meta().id = "abc" or substr(`a`, 0, 3) = "def")',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and (meta().id = "abc" or substr(`a`, 0, 3) = "def")',
             $this->queryToSql($query));
     }
 
@@ -598,14 +598,14 @@ class QueryBuilderTest extends TestCase
      */
     public function testWhereDeepNestedRaw()
     {
-        $query = DB::table('table6')->where(function($query){
+        $query = DB::table('table6')->where(function ($query) {
             $query->whereRaw('meta().id = "abc"')
-                ->orWhere(function($query){
+                ->orWhere(function ($query) {
                     $query->whereRaw('substr(`b`, 0, 3) = "ghi"')
                         ->where(DB::raw('substr(`a`, 0, 3)'), "def");
                 });
         });
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and (meta().id = "abc" or (substr(`b`, 0, 3) = "ghi" and substr(`a`, 0, 3) = "def"))',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and (meta().id = "abc" or (substr(`b`, 0, 3) = "ghi" and substr(`a`, 0, 3) = "def"))',
             $this->queryToSql($query));
     }
 
@@ -645,16 +645,29 @@ class QueryBuilderTest extends TestCase
     public function testSelectColumnStar()
     {
         $query = DB::table('table6')->select();
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6"',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6"',
             $this->queryToSql($query));
 
         $query = DB::table('table6')->select('*');
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6"',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6"',
             $this->queryToSql($query));
 
         $query = DB::table('table6')->select(['*']);
-        $this->assertEquals('select `'.$query->from.'`.*, meta(`'.$query->from.'`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6"',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6"',
             $this->queryToSql($query));
+    }
+
+    /**
+     * @group QueryBuilderTest
+     */
+    public function testWhereAnyIn()
+    {
+        $query = DB::table('table6')->whereAnyIn('user_ids', ['123', '456']);
+        $sql = $this->queryToSql($query);
+        $this->assertEquals(1, preg_match('/ANY `([a-zA-Z0-9]+)`/', $sql, $match));
+        $colIdentifier = $match[1];
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and ANY `'.$colIdentifier.'` IN `user_ids` SATISFIES `'.$colIdentifier.'` IN ["123", "456"] END',
+            $sql);
     }
 
     /**

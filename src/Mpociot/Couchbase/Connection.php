@@ -1,4 +1,6 @@
-<?php namespace Mpociot\Couchbase;
+<?php declare(strict_types=1);
+
+namespace Mpociot\Couchbase;
 
 use CouchbaseBucket;
 use CouchbaseCluster;
