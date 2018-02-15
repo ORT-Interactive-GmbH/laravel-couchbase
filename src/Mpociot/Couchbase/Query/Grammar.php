@@ -1,4 +1,6 @@
-<?php namespace Mpociot\Couchbase\Query;
+<?php declare(strict_types=1);
+
+namespace Mpociot\Couchbase\Query;
 
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;

@@ -1,4 +1,4 @@
-<?php namespace Mpociot\Couchbase\Eloquent;
+<?php declare(strict_types=1); namespace Mpociot\Couchbase\Eloquent;
 
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
@@ -133,7 +133,7 @@ trait HybridRelations
         // the calling method's name and use that as the relationship name as most
         // of the time this will be what we desire to use for the relationships.
         if (is_null($relation)) {
-            list($current, $caller) = debug_backtrace(false, 2);
+            list($current, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
             $relation = $caller['function'];
         }

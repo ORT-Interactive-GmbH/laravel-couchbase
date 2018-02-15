@@ -1,4 +1,4 @@
-<?php namespace Mpociot\Couchbase\Eloquent;
+<?php declare(strict_types=1); namespace Mpociot\Couchbase\Eloquent;
 
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -84,7 +84,7 @@ abstract class Model extends BaseModel
         // the calling method's name and use that as the relationship name as most
         // of the time this will be what we desire to use for the relatinoships.
         if (is_null($relation)) {
-            list(, $caller) = debug_backtrace(false);
+            list(, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
             $relation = $caller['function'];
         }
@@ -119,7 +119,7 @@ abstract class Model extends BaseModel
         // the calling method's name and use that as the relationship name as most
         // of the time this will be what we desire to use for the relatinoships.
         if (is_null($relation)) {
-            list(, $caller) = debug_backtrace(false);
+            list(, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
             $relation = $caller['function'];
         }

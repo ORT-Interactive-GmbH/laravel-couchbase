@@ -1,4 +1,6 @@
-<?php namespace Mpociot\Couchbase\Relations;
+<?php declare(strict_types=1);
+
+namespace Mpociot\Couchbase\Relations;
 
 class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
 {

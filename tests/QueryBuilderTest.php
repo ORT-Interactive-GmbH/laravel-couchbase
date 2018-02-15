@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 use Mpociot\Couchbase\Query\Builder as Query;
 use Mpociot\Couchbase\Query\Grammar;

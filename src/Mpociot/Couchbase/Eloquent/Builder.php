@@ -1,4 +1,6 @@
-<?php namespace Mpociot\Couchbase\Eloquent;
+<?php declare(strict_types=1);
+
+namespace Mpociot\Couchbase\Eloquent;
 
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
