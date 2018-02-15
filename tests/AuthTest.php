@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Foundation\Application;
@@ -14,8 +14,8 @@ class AuthTest extends TestCase
     public function testAuthAttempt()
     {
         $user = User::create([
-            'name'     => 'John Doe',
-            'email'    => 'john@doe.com',
+            'name' => 'John Doe',
+            'email' => 'john@doe.com',
             'password' => Hash::make('foobar'),
         ]);
 

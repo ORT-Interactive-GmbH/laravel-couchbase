@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 class ModelTest extends TestCase
 {
@@ -34,8 +34,8 @@ class ModelTest extends TestCase
 
         $this->assertTrue(isset($user->_id));
         $this->assertTrue(is_string($user->_id));
-        $this->assertNotEquals('', (string) $user->_id);
-        $this->assertNotEquals(0, strlen((string) $user->_id));
+        $this->assertNotEquals('', (string)$user->_id);
+        $this->assertNotEquals(0, strlen((string)$user->_id));
         $this->assertInstanceOf('Carbon\Carbon', $user->created_at);
 
         $this->assertEquals('John Doe', $user->name);
@@ -232,7 +232,7 @@ class ModelTest extends TestCase
         $user->age = 35;
         $user->save();
 
-        User::destroy((string) $user->_id);
+        User::destroy((string)$user->_id);
 
         $this->assertEquals(0, User::count());
     }
@@ -284,7 +284,7 @@ class ModelTest extends TestCase
         $user->restore();
         $this->assertEquals(2, Soft::count());
     }
-    
+
     /**
      * @group testPrimaryKey
      */
@@ -292,16 +292,16 @@ class ModelTest extends TestCase
     {
         $user = new User;
         $this->assertEquals('_id', $user->getKeyName());
-        
+
         $book = new Book;
         $this->assertEquals('title', $book->getKeyName());
-        
+
         $book->title = 'A Game of Thrones';
         $book->author = 'George R. R. Martin';
         $book->save();
-        
+
         $this->assertEquals('A Game of Thrones', $book->getKey());
-        
+
         $check = Book::find('A Game of Thrones');
         $this->assertEquals('title', $check->getKeyName());
         $this->assertEquals('A Game of Thrones', $check->getKey());
@@ -389,7 +389,7 @@ class ModelTest extends TestCase
         $this->assertTrue(is_string($array['updated_at']));
         $this->assertTrue(is_string($array['_id']));
     }
-    
+
     /**
      * @group testUnset
      */
@@ -415,16 +415,16 @@ class ModelTest extends TestCase
         $this->assertTrue(isset($user2->note2));
 
         $user2->unset(['note1', 'note2']);
-    
+
         $this->assertFalse(isset($user1->note1));
         $this->assertTrue(isset($user1->note2));
         $this->assertFalse(isset($user2->note1));
         $this->assertFalse(isset($user2->note2));
-    
+
         // Re-fetch to be sure
         $user1 = User::find($user1->getKey());
         $user2 = User::find($user2->getKey());
-    
+
         $this->assertFalse(isset($user1->note1));
         $this->assertTrue(isset($user1->note2));
         $this->assertFalse(isset($user2->note1));
@@ -434,9 +434,9 @@ class ModelTest extends TestCase
     public function testDotNotation()
     {
         $user = User::create([
-            'name'    => 'John Doe',
+            'name' => 'John Doe',
             'address' => [
-                'city'    => 'Paris',
+                'city' => 'Paris',
                 'country' => 'France',
             ],
         ]);

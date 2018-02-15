@@ -1,4 +1,6 @@
-<?php namespace Mpociot\Couchbase\Relations;
+<?php declare(strict_types=1);
+
+namespace Mpociot\Couchbase\Relations;
 
 class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
 {
@@ -18,7 +20,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
     /**
      * Set the constraints for an eager load of the relation.
      *
-     * @param  array  $models
+     * @param  array $models
      */
     public function addEagerConstraints(array $models)
     {
