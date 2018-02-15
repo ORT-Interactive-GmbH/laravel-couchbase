@@ -72,11 +72,12 @@ test_php7.1_cb5:
   # run laravel tests
   - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
 
-test_php7.2_cb5:
-  variables:
-    CB_DATABASE: "test-ing-cb5"
-    CB_VERSION: 5
-  image: php:7.2
-  script:
-  # run laravel tests
-  - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+# couchbase does not work with debian 9
+#test_php7.2_cb5:
+#  variables:
+#    CB_DATABASE: "test-ing-cb5"
+#    CB_VERSION: 5
+#  image: php:7.2
+#  script:
+#  # run laravel tests
+#  - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
