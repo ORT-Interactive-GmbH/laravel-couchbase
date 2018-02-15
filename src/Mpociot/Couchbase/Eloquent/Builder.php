@@ -316,34 +316,6 @@ class Builder extends EloquentBuilder
         return $this->whereIn($this->model->getKeyName(), $relatedIds, $boolean, $not);
     }
 
-
-    /**
-     * Add a "where in" clause to the query.
-     *
-     * @param  string $column
-     * @param  mixed $values
-     * @param  string $boolean
-     * @return $this
-     */
-    public function whereAnyIn($column, $values, $boolean = 'and')
-    {
-        $type = 'AnyIn';
-
-        if ($values instanceof Arrayable) {
-            $values = $values->toArray();
-        }
-
-        $this->wheres[] = compact('type', 'column', 'values', 'boolean');
-
-        foreach ($values as $value) {
-            if (!$value instanceof Expression) {
-                $this->addBinding($value, 'where');
-            }
-        }
-
-        return $this;
-    }
-
     /**
      * Create a raw database expression.
      *

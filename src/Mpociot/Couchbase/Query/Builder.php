@@ -371,64 +371,6 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param \Closure|\Illuminate\Database\Query\Builder|string $query
-     * @param string $as
-     * @return \Illuminate\Database\Query\Builder
-     */
-    public function selectSub($query, $as)
-    {
-        if ($query instanceof \Closure) {
-            $callback = $query;
-
-            $callback($query = $this->newQuery());
-        }
-
-        list($query, $bindings) = $this->parseSubSelect($query);
-
-        return $this->selectRaw(
-            '(' . $query . ') as ' . $this->grammar->wrap($as, false, true), $bindings
-        );
-    }
-
-    /**
-     * @param string $column
-     * @param int $amount
-     * @param array $extra
-     * @return int
-     */
-    public function increment($column, $amount = 1, array $extra = [])
-    {
-        if (!is_numeric($amount)) {
-            throw new \InvalidArgumentException('Non-numeric value passed to increment method.');
-        }
-
-        $wrapped = $this->grammar->wrap($column, false, true);
-
-        $columns = array_merge([$column => $this->raw("$wrapped + $amount")], $extra);
-
-        return $this->update($columns);
-    }
-
-    /**
-     * @param string $column
-     * @param int $amount
-     * @param array $extra
-     * @return int
-     */
-    public function decrement($column, $amount = 1, array $extra = [])
-    {
-        if (!is_numeric($amount)) {
-            throw new \InvalidArgumentException('Non-numeric value passed to decrement method.');
-        }
-
-        $wrapped = $this->grammar->wrap($column, false, true);
-
-        $columns = array_merge([$column => $this->raw("$wrapped - $amount")], $extra);
-
-        return $this->update($columns);
-    }
-
-    /**
      * Add a where between statement to the query.
      *
      * @param  string $column
@@ -770,6 +712,33 @@ class Builder extends BaseBuilder
             $column = $this->grammar->getMetaIdExpression($this);
         }
         return parent::whereNull($column, $boolean, $not);
+    }
+
+    /**
+     * Add a "where in" clause to the query.
+     *
+     * @param  string $column
+     * @param  mixed $values
+     * @param  string $boolean
+     * @return $this
+     */
+    public function whereAnyIn($column, $values, $boolean = 'and')
+    {
+        $type = 'AnyIn';
+
+        if ($values instanceof Arrayable) {
+            $values = $values->toArray();
+        }
+
+        $this->wheres[] = compact('type', 'column', 'values', 'boolean');
+
+        foreach ($values as $value) {
+            if (!$value instanceof Expression) {
+                $this->addBinding($value, 'where');
+            }
+        }
+
+        return $this;
     }
 
     /**

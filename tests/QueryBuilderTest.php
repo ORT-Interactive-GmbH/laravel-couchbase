@@ -658,6 +658,19 @@ class QueryBuilderTest extends TestCase
     }
 
     /**
+     * @group QueryBuilderTest
+     */
+    public function testWhereAnyIn()
+    {
+        $query = DB::table('table6')->whereAnyIn('user_ids', ['123', '456']);
+        $sql = $this->queryToSql($query);
+        $this->assertEquals(1, preg_match('/ANY `([a-zA-Z0-9]+)`/', $sql, $match));
+        $colIdentifier = $match[1];
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and ANY `'.$colIdentifier.'` IN `user_ids` SATISFIES `'.$colIdentifier.'` IN ["123", "456"] END',
+            $sql);
+    }
+
+    /**
      * @param Query $query
      * @return string
      */
