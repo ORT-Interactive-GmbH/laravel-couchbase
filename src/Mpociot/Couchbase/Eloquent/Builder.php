@@ -2,12 +2,9 @@
 
 namespace Mpociot\Couchbase\Eloquent;
 
-use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\Query\Expression;
 use Illuminate\Pagination\Paginator;
-use Mpociot\Couchbase\Connection;
 use Mpociot\Couchbase\Query\Builder as QueryBuilder;
 
 class Builder extends EloquentBuilder
