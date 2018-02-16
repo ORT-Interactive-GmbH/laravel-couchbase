@@ -9,179 +9,8 @@ use Mpociot\Couchbase\Helper;
 
 class Grammar extends BaseGrammar
 {
-    protected $reservedWords = [
-        'ALL',
-        'ALTER',
-        'ANALYZE',
-        'AND',
-        'ANY',
-        'ARRAY',
-        'AS',
-        'ASC',
-        'BEGIN',
-        'BETWEEN',
-        'BINARY',
-        'BOOLEAN',
-        'BREAK',
-        'BUCKET',
-        'BUILD',
-        'BY',
-        'CALL',
-        'CASE',
-        'CAST',
-        'CLUSTER',
-        'COLLATE',
-        'COLLECTION',
-        'COMMIT',
-        'CONNECT',
-        'CONTINUE',
-        'CORRELATE',
-        'COVER',
-        'CREATE',
-        'DATABASE',
-        'DATASET',
-        'DATASTORE',
-        'DECLARE',
-        'DECREMENT',
-        'DELETE',
-        'DERIVED',
-        'DESC',
-        'DESCRIBE',
-        'DISTINCT',
-        'DO',
-        'DROP',
-        'EACH',
-        'ELEMENT',
-        'ELSE',
-        'END',
-        'EVERY',
-        'EXCEPT',
-        'EXCLUDE',
-        'EXECUTE',
-        'EXISTS',
-        'EXPLAIN',
-        'FALSE',
-        'FETCH',
-        'FIRST',
-        'FLATTEN',
-        'FOR',
-        'FORCE',
-        'FROM',
-        'FUNCTION',
-        'GRANT',
-        'GROUP',
-        'GSI',
-        'HAVING',
-        'IF',
-        'IGNORE',
-        'ILIKE',
-        'IN',
-        'INCLUDE',
-        'INCREMENT',
-        'INDEX',
-        'INFER',
-        'INLINE',
-        'INNER',
-        'INSERT',
-        'INTERSECT',
-        'INTO',
-        'IS',
-        'JOIN',
-        'KEY',
-        'KEYS',
-        'KEYSPACE',
-        'KNOWN',
-        'LAST',
-        'LEFT',
-        'LET',
-        'LETTING',
-        'LIKE',
-        'LIMIT',
-        'LSM',
-        'MAP',
-        'MAPPING',
-        'MATCHED',
-        'MATERIALIZED',
-        'MERGE',
-        'MINUS',
-        'MISSING',
-        'NAMESPACE',
-        'NEST',
-        'NOT',
-        'NULL',
-        'NUMBER',
-        'OBJECT',
-        'OFFSET',
-        'ON',
-        'OPTION',
-        'OR',
-        'ORDER',
-        'OUTER',
-        'OVER',
-        'PARSE',
-        'PARTITION',
-        'PASSWORD',
-        'PATH',
-        'POOL',
-        'PREPARE',
-        'PRIMARY',
-        'PRIVATE',
-        'PRIVILEGE',
-        'PROCEDURE',
-        'PUBLIC',
-        'RAW',
-        'REALM',
-        'REDUCE',
-        'RENAME',
-        'RETURN',
-        'RETURNING',
-        'REVOKE',
-        'RIGHT',
-        'ROLE',
-        'ROLLBACK',
-        'SATISFIES',
-        'SCHEMA',
-        'SELECT',
-        'SELF',
-        'SEMI',
-        'SET',
-        'SHOW',
-        'SOME',
-        'START',
-        'STATISTICS',
-        'STRING',
-        'SYSTEM',
-        'THEN',
-        'TO',
-        'TRANSACTION',
-        'TRIGGER',
-        'TRUE',
-        'TRUNCATE',
-        'UNDER',
-        'UNION',
-        'UNIQUE',
-        'UNKNOWN',
-        'UNNEST',
-        'UNSET',
-        'UPDATE',
-        'UPSERT',
-        'USE',
-        'USER',
-        'USING',
-        'VALIDATE',
-        'VALUE',
-        'VALUED',
-        'VALUES',
-        'VIA',
-        'VIEW',
-        'WHEN',
-        'WHERE',
-        'WHILE',
-        'WITH',
-        'WITHIN',
-        'WORK',
-        'XOR',
-    ];
+    const IDENTIFIER_ENCLOSURE_CHAR = '`';
+    const VIRTUAL_META_ID_COLUMN = '_id';
 
     /**
      * The components that make up a select clause.
@@ -221,12 +50,6 @@ class Grammar extends BaseGrammar
             return $value;
         }
 
-        if ($value[0] === '`' && $value[0] === substr($value, -1)) {
-            return $this->wrapValue($value);
-        } elseif ($value === '*') {
-            return $this->wrapValue($value);
-        }
-
         if (false !== strpos($value, '.')) {
             return $this->wrapSegments(explode('.', $value));
         }
@@ -239,6 +62,8 @@ class Grammar extends BaseGrammar
     }
 
     /**
+     * Used to wrap identifiers.
+     *
      * @param string $value
      * @return string
      */
@@ -248,21 +73,24 @@ class Grammar extends BaseGrammar
             return $value;
         }
 
-        if ('`' === $value[0] && '`' === substr($value, -1)) {
-            if (substr_count($value, '`') % 2 === 0) {
+        if (self::IDENTIFIER_ENCLOSURE_CHAR === mb_substr($value, 0,
+                1) && self::IDENTIFIER_ENCLOSURE_CHAR === mb_substr($value, -1)) {
+            if (mb_substr_count($value, self::IDENTIFIER_ENCLOSURE_CHAR) % 2 === 0) {
                 return $value;
             }
-            return $this->wrapValue(substr($value, 1, -1));
+            return $this->wrapValue(mb_substr($value, 1, -1));
         }
 
-        return '`' . str_replace('`', '``', $value) . '`';
+        return self::IDENTIFIER_ENCLOSURE_CHAR . str_replace(self::IDENTIFIER_ENCLOSURE_CHAR,
+                self::IDENTIFIER_ENCLOSURE_CHAR . self::IDENTIFIER_ENCLOSURE_CHAR,
+                $value) . self::IDENTIFIER_ENCLOSURE_CHAR;
     }
 
     /**
      * @param array $segments
      * @return string
      */
-    protected function wrapSegments($segments)
+    public function wrapSegments($segments)
     {
         return implode('.', array_map([$this, 'wrapValue'], $segments));
     }
@@ -297,10 +125,11 @@ class Grammar extends BaseGrammar
         if (is_null($query->columns) || $query->columns === ['*']) {
             $query->columns = [$this->wrapTable($query->connection->getBucketName()) . '.*'];
         }
-        if ($query->columns === [$this->wrapTable($query->connection->getBucketName()) . '.*'] || in_array('_id',
-                $query->columns)) {
-            $query->columns[] = $this->getMetaIdExpression($query, true);
-            $query->columns = array_diff($query->columns, ['_id']);
+        if ($query->columns === [$this->wrapTable($query->connection->getBucketName()) . '.*']) {
+            $query->columns[] = self::VIRTUAL_META_ID_COLUMN;
+        }
+        foreach ($query->columns as $i => $column) {
+            $query->columns[$i] = $this->replaceColumnIfMetaId($column, $query, true);
         }
 
         // To compile the query, we'll spin through each component of the query and
@@ -349,21 +178,19 @@ class Grammar extends BaseGrammar
     {
         $values = $this->parameterize($where['values'] ?? []);
 
-        if (trim($where['column'], "`") === '_id') {
-            $where['column'] = $this->getMetaIdExpression($query);
-        }
+        $where['column'] = $this->replaceColumnIfMetaId($where['column'], $query);
 
         return $this->wrap($where['column']) . ' in [' . $values . ']';
     }
 
     /**
      * @param BaseBuilder $query
-     * @param bool $withAsUnderscoreId
+     * @param bool $withAs
      * @return Expression
      */
-    public function getMetaIdExpression(BaseBuilder $query, $withAsUnderscoreId = false)
+    public function getMetaIdExpression(BaseBuilder $query, $withAs = false)
     {
-        return new Expression('meta(' . $this->wrapTable($query->getConnection()->getBucketName()) . ').`id`' . ($withAsUnderscoreId ? ' as `_id`' : ''));
+        return new Expression('meta(' . $this->wrapTable($query->getConnection()->getBucketName()) . ').' . $this->wrapValue('id') . ($withAs ? ' as ' . $this->wrapValue(self::VIRTUAL_META_ID_COLUMN) : ''));
     }
 
     /**
@@ -377,11 +204,23 @@ class Grammar extends BaseGrammar
     {
         $values = $this->parameterize($where['values'] ?? []);
 
-        if (trim($where['column'], "`") === '_id') {
-            $where['column'] = $this->getMetaIdExpression($query);
-        }
+        $where['column'] = $this->replaceColumnIfMetaId($where['column'], $query);
 
         return $this->wrap($where['column']) . ' not in [' . $values . ']';
+    }
+
+    /**
+     * @param string $column
+     * @param BaseBuilder $query
+     * @param bool $withAs
+     * @return Expression|string
+     */
+    private function replaceColumnIfMetaId($column, BaseBuilder $query, $withAs = false)
+    {
+        if (is_string($column) && trim($column, self::IDENTIFIER_ENCLOSURE_CHAR) === self::VIRTUAL_META_ID_COLUMN) {
+            $column = $this->getMetaIdExpression($query, $withAs);
+        }
+        return $column;
     }
 
     /**
