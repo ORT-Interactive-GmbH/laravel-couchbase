@@ -241,12 +241,12 @@ class QueryBuilderTest extends TestCase
         DB::table('items')->useKeys('item:3')->insert(['name' => 'spoon', 'type' => 'round']);
         DB::table('items')->useKeys('item:4')->insert(['name' => 'spoon', 'type' => 'round']);
 
-        $items = DB::table('items')->distinct('name')->get()->toArray();
+        $items = DB::table('items')->select('name')->distinct()->get()->toArray();
         sort($items);
         $this->assertEquals(3, count($items));
         $this->assertEquals([['name' => 'fork'], ['name' => 'knife'], ['name' => 'spoon']], $items);
 
-        $types = DB::table('items')->distinct('type')->get()->toArray();
+        $types = DB::table('items')->select('type')->distinct()->get()->toArray();
         sort($types);
         $this->assertEquals(2, count($types));
         $this->assertEquals([['type' => 'round'], ['type' => 'sharp']], $types);
@@ -666,7 +666,7 @@ class QueryBuilderTest extends TestCase
         $sql = $this->queryToSql($query);
         $this->assertEquals(1, preg_match('/ANY `([a-zA-Z0-9]+)`/', $sql, $match));
         $colIdentifier = $match[1];
-        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and ANY `'.$colIdentifier.'` IN `user_ids` SATISFIES `'.$colIdentifier.'` IN ["123", "456"] END',
+        $this->assertEquals('select `' . $query->from . '`.*, meta(`' . $query->from . '`).`id` as `_id` from `' . $query->from . '` where `eloquent_type` = "table6" and ANY `' . $colIdentifier . '` IN `user_ids` SATISFIES `' . $colIdentifier . '` IN ["123", "456"] END',
             $sql);
     }
 

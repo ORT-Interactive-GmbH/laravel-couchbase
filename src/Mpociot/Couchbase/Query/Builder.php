@@ -3,6 +3,7 @@
 namespace Mpociot\Couchbase\Query;
 
 use Couchbase\Exception;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
@@ -188,6 +189,7 @@ class Builder extends BaseBuilder
                 FILTER_FLAG_ALLOW_FRACTION); // lumen
             return version_compare($version, '5.3', '>=');
         }
+        return false;
     }
 
     /**
@@ -350,24 +352,7 @@ class Builder extends BaseBuilder
      */
     public function exists()
     {
-        return !is_null($this->first());
-    }
-
-    /**
-     * Force the query to only return distinct results.
-     *
-     * @param string|null $column
-     * @return \Mpociot\Couchbase\Query\Builder
-     */
-    public function distinct($column = null)
-    {
-        $this->distinct = true;
-
-        if ($column) {
-            $this->columns = [$column];
-        }
-
-        return $this;
+        return !is_null($this->first([Grammar::VIRTUAL_META_ID_COLUMN]));
     }
 
     /**
@@ -547,7 +532,7 @@ class Builder extends BaseBuilder
      * @param  mixed $value
      * @param bool $unique
      *
-     * @return int
+     * @return array|\Couchbase\Document
      */
     public function push($column, $value = null, $unique = false)
     {
@@ -574,7 +559,8 @@ class Builder extends BaseBuilder
      * @param  mixed $column
      * @param  mixed $value
      *
-     * @return int
+     * @return array|\Couchbase\Document|null
+     * @throws Exception
      */
     public function pull($column, $value = null)
     {
@@ -584,7 +570,7 @@ class Builder extends BaseBuilder
             if ($e->getCode() === COUCHBASE_KEY_ENOENT) {
                 trigger_error('Tying to pull a value from non existing document ' . json_encode($this->keys) . '.',
                     E_USER_WARNING);
-                return;
+                return null;
             }
             throw $e;
         }
@@ -595,7 +581,7 @@ class Builder extends BaseBuilder
         if (!isset($obj->value->{$column})) {
             trigger_error('Tying to pull a value from non existing column ' . json_encode($column) . ' in document ' . json_encode($this->keys) . '.',
                 E_USER_WARNING);
-            return;
+            return null;
         }
         $filtered = collect($obj->value->{$column})->reject(function ($val, $key) use ($value) {
             $match = false;
@@ -654,16 +640,6 @@ class Builder extends BaseBuilder
     public function newQuery()
     {
         return new Builder($this->connection, $this->processor);
-    }
-
-    /**
-     * Run the query as a "select" statement against the connection.
-     *
-     * @return array
-     */
-    protected function runSelect()
-    {
-        return parent::runSelect();
     }
 
     /**
