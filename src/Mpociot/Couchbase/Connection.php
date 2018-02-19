@@ -1,6 +1,7 @@
-<?php namespace Mpociot\Couchbase;
+<?php declare(strict_types=1);
 
-use Couchbase\N1qlQuery;
+namespace Mpociot\Couchbase;
+
 use CouchbaseBucket;
 use CouchbaseCluster;
 use CouchbaseN1qlQuery;
@@ -40,7 +41,7 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Create a new database connection instance.
      *
-     * @param  array   $config
+     * @param  array $config
      */
     public function __construct(array $config)
     {
@@ -51,14 +52,14 @@ class Connection extends \Illuminate\Database\Connection
 
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config);
-        if(isset($config['username']) && isset($config['password']) && isset($config['auth_type'])) {
-            if($config['auth_type'] === self::AUTH_TYPE_USER_PASSWORD) {
+        if (isset($config['username']) && isset($config['password']) && isset($config['auth_type'])) {
+            if ($config['auth_type'] === self::AUTH_TYPE_USER_PASSWORD) {
                 // Couchbase 5.x
                 $cbAuth = new \Couchbase\PasswordAuthenticator();
                 $cbAuth->username($config['username']);
                 $cbAuth->password($config['password']);
                 $this->connection->authenticate($cbAuth);
-            } elseif($config['auth_type'] === self::AUTH_TYPE_CLUSTER_ADMIN) {
+            } elseif ($config['auth_type'] === self::AUTH_TYPE_CLUSTER_ADMIN) {
                 // Couchbase 4.x
                 $cbAuth = new \CouchbaseAuthenticator();
                 $cbAuth->cluster($config['username'], $config['password']);
@@ -100,7 +101,7 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Begin a fluent query against a set of docuemnt types.
      *
-     * @param  string  $type
+     * @param  string $type
      * @return Query\Builder
      */
     public function builder($type)
@@ -127,8 +128,8 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Execute an SQL statement and return the boolean result.
      *
-     * @param  string  $query
-     * @param  array   $bindings
+     * @param  string $query
+     * @param  array $bindings
      * @return mixed
      */
     public function statement($query, $bindings = [])
@@ -203,7 +204,7 @@ class Connection extends \Illuminate\Database\Connection
 
     /**
      * @param string $query
-     * @param array  $bindings
+     * @param array $bindings
      *
      * @return int|mixed
      */
@@ -216,7 +217,7 @@ class Connection extends \Illuminate\Database\Connection
      * Run an update statement against the database.
      *
      * @param string $query
-     * @param array  $bindings
+     * @param array $bindings
      *
      * @return int|\stdClass
      */
@@ -229,7 +230,7 @@ class Connection extends \Illuminate\Database\Connection
      * Run a delete statement against the database.
      *
      * @param string $query
-     * @param array  $bindings
+     * @param array $bindings
      *
      * @return int|\stdClass
      */
@@ -282,7 +283,7 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Begin a fluent query against documents with given type.
      *
-     * @param  string  $table
+     * @param  string $table
      * @return Query\Builder
      */
     public function type($table)
@@ -293,7 +294,7 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Begin a fluent query against documents with given type.
      *
-     * @param  string  $table
+     * @param  string $table
      * @return Query\Builder
      */
     public function table($table)
@@ -334,14 +335,17 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Create a new Couchbase connection.
      *
-     * @param  string  $dsn
-     * @param  array   $config
+     * @param  string $dsn
+     * @param  array $config
      * @return \CouchbaseCluster
      */
     protected function createConnection($dsn, array $config)
     {
         $cluster = new CouchbaseCluster($config['host']);
         if (!empty($config['username']) && !empty($config['password'])) {
+            if (!method_exists($cluster, 'authenticateAs')) {
+                throw new \RuntimeException('The couchbase php sdk does not support password authentication below version 2.4.0.');
+            }
             $cluster->authenticateAs(strval($config['username']), strval($config['password']));
         }
         return $cluster;
@@ -358,13 +362,13 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Create a DSN string from a configuration.
      *
-     * @param  array   $config
+     * @param  array $config
      * @return string
      */
     protected function getDsn(array $config)
     {
         // Check if the user passed a complete dsn to the configuration.
-        if (! empty($config['dsn'])) {
+        if (!empty($config['dsn'])) {
             return $config['dsn'];
         }
 
@@ -373,7 +377,7 @@ class Connection extends \Illuminate\Database\Connection
 
         foreach ($hosts as &$host) {
             // Check if we need to add a port to the host
-            if (strpos($host, ':') === false && ! empty($config['port'])) {
+            if (strpos($host, ':') === false && !empty($config['port'])) {
                 $host = $host . ':' . $config['port'];
             }
         }
@@ -384,7 +388,7 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Get the elapsed time since a given starting point.
      *
-     * @param  int    $start
+     * @param  int $start
      * @return float
      */
     public function getElapsedTime($start)
@@ -415,8 +419,8 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Dynamically pass methods to the connection.
      *
-     * @param  string  $method
-     * @param  array   $parameters
+     * @param  string $method
+     * @param  array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)

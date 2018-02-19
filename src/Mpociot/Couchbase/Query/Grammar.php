@@ -1,187 +1,21 @@
-<?php namespace Mpociot\Couchbase\Query;
+<?php declare(strict_types=1);
 
-use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
+namespace Mpociot\Couchbase\Query;
+
 use Illuminate\Database\Query\Builder as BaseBuilder;
+use Illuminate\Database\Query\Expression;
+use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
 use Mpociot\Couchbase\Helper;
 
 class Grammar extends BaseGrammar
 {
-    protected $reservedWords = [
-        'ALL',
-        'ALTER',
-        'ANALYZE',
-        'AND',
-        'ANY',
-        'ARRAY',
-        'AS',
-        'ASC',
-        'BEGIN',
-        'BETWEEN',
-        'BINARY',
-        'BOOLEAN',
-        'BREAK',
-        'BUCKET',
-        'BUILD',
-        'BY',
-        'CALL',
-        'CASE',
-        'CAST',
-        'CLUSTER',
-        'COLLATE',
-        'COLLECTION',
-        'COMMIT',
-        'CONNECT',
-        'CONTINUE',
-        'CORRELATE',
-        'COVER',
-        'CREATE',
-        'DATABASE',
-        'DATASET',
-        'DATASTORE',
-        'DECLARE',
-        'DECREMENT',
-        'DELETE',
-        'DERIVED',
-        'DESC',
-        'DESCRIBE',
-        'DISTINCT',
-        'DO',
-        'DROP',
-        'EACH',
-        'ELEMENT',
-        'ELSE',
-        'END',
-        'EVERY',
-        'EXCEPT',
-        'EXCLUDE',
-        'EXECUTE',
-        'EXISTS',
-        'EXPLAIN',
-        'FALSE',
-        'FETCH',
-        'FIRST',
-        'FLATTEN',
-        'FOR',
-        'FORCE',
-        'FROM',
-        'FUNCTION',
-        'GRANT',
-        'GROUP',
-        'GSI',
-        'HAVING',
-        'IF',
-        'IGNORE',
-        'ILIKE',
-        'IN',
-        'INCLUDE',
-        'INCREMENT',
-        'INDEX',
-        'INFER',
-        'INLINE',
-        'INNER',
-        'INSERT',
-        'INTERSECT',
-        'INTO',
-        'IS',
-        'JOIN',
-        'KEY',
-        'KEYS',
-        'KEYSPACE',
-        'KNOWN',
-        'LAST',
-        'LEFT',
-        'LET',
-        'LETTING',
-        'LIKE',
-        'LIMIT',
-        'LSM',
-        'MAP',
-        'MAPPING',
-        'MATCHED',
-        'MATERIALIZED',
-        'MERGE',
-        'MINUS',
-        'MISSING',
-        'NAMESPACE',
-        'NEST',
-        'NOT',
-        'NULL',
-        'NUMBER',
-        'OBJECT',
-        'OFFSET',
-        'ON',
-        'OPTION',
-        'OR',
-        'ORDER',
-        'OUTER',
-        'OVER',
-        'PARSE',
-        'PARTITION',
-        'PASSWORD',
-        'PATH',
-        'POOL',
-        'PREPARE',
-        'PRIMARY',
-        'PRIVATE',
-        'PRIVILEGE',
-        'PROCEDURE',
-        'PUBLIC',
-        'RAW',
-        'REALM',
-        'REDUCE',
-        'RENAME',
-        'RETURN',
-        'RETURNING',
-        'REVOKE',
-        'RIGHT',
-        'ROLE',
-        'ROLLBACK',
-        'SATISFIES',
-        'SCHEMA',
-        'SELECT',
-        'SELF',
-        'SEMI',
-        'SET',
-        'SHOW',
-        'SOME',
-        'START',
-        'STATISTICS',
-        'STRING',
-        'SYSTEM',
-        'THEN',
-        'TO',
-        'TRANSACTION',
-        'TRIGGER',
-        'TRUE',
-        'TRUNCATE',
-        'UNDER',
-        'UNION',
-        'UNIQUE',
-        'UNKNOWN',
-        'UNNEST',
-        'UNSET',
-        'UPDATE',
-        'UPSERT',
-        'USE',
-        'USER',
-        'USING',
-        'VALIDATE',
-        'VALUE',
-        'VALUED',
-        'VALUES',
-        'VIA',
-        'VIEW',
-        'WHEN',
-        'WHERE',
-        'WHILE',
-        'WITH',
-        'WITHIN',
-        'WORK',
-        'XOR'
-    ];
+    const IDENTIFIER_ENCLOSURE_CHAR = '`';
+    const VIRTUAL_META_ID_COLUMN = '_id';
 
     /**
      * The components that make up a select clause.
+     *
+     * Note: We added "key"
      *
      * @var array
      */
@@ -189,8 +23,8 @@ class Grammar extends BaseGrammar
         'aggregate',
         'columns',
         'from',
-        'keys',
         'joins',
+        'keys',
         'wheres',
         'groups',
         'havings',
@@ -202,135 +36,236 @@ class Grammar extends BaseGrammar
     ];
 
     /**
-     * {@inheritdoc}
+     * @param \Illuminate\Database\Query\Expression|string $value
+     * @param bool $prefixAlias
+     * @return string
      */
-    protected function wrapValue($value)
+    public function wrap($value, $prefixAlias = false)
+    {
+        if ($this->isExpression($value)) {
+            return $this->getValue($value);
+        }
+
+        if (!is_scalar($value)) {
+            return $value;
+        }
+
+        if (false !== strpos($value, '.')) {
+            return $this->wrapSegments(explode('.', $value));
+        }
+
+        if (strpos(strtolower($value), ' as ') !== false) {
+            return $this->wrapAliasedValue($value, $prefixAlias);
+        }
+
+        return $this->wrapValue($value);
+    }
+
+    /**
+     * Used to wrap identifiers.
+     *
+     * @param string $value
+     * @return string
+     */
+    public function wrapValue($value)
     {
         if ($value === '*') {
             return $value;
         }
 
-        return $value;
+        if (self::IDENTIFIER_ENCLOSURE_CHAR === mb_substr($value, 0,
+                1) && self::IDENTIFIER_ENCLOSURE_CHAR === mb_substr($value, -1)) {
+            if (mb_substr_count($value, self::IDENTIFIER_ENCLOSURE_CHAR) % 2 === 0) {
+                return $value;
+            }
+            return $this->wrapValue(mb_substr($value, 1, -1));
+        }
+
+        return self::IDENTIFIER_ENCLOSURE_CHAR . str_replace(self::IDENTIFIER_ENCLOSURE_CHAR,
+                self::IDENTIFIER_ENCLOSURE_CHAR . self::IDENTIFIER_ENCLOSURE_CHAR,
+                $value) . self::IDENTIFIER_ENCLOSURE_CHAR;
     }
 
     /**
-     * @param $value
-     *
+     * @param array $segments
      * @return string
      */
-    protected function wrapKey($value)
+    public function wrapSegments($segments)
     {
-        if (is_null($value)) {
-            return;
+        return implode('.', array_map([$this, 'wrapValue'], $segments));
+    }
+
+    /**
+     * @param mixed $value
+     * @return string
+     */
+    public static function wrapData($value)
+    {
+        $data = json_encode($value);
+        if (JSON_ERROR_NONE !== json_last_error()) {
+            throw new \InvalidArgumentException(
+                'json_decode error: ' . json_last_error_msg());
+        }
+        return $data;
+    }
+
+    /**
+     * Compile a select query into SQL.
+     *
+     * @param  BaseBuilder $query
+     * @return string
+     */
+    public function compileSelect(BaseBuilder $query)
+    {
+        // If the query does not have any columns set, we'll set the columns to the
+        // * character to just get all of the columns from the database. Then we
+        // can build the query and concatenate all the pieces together as one.
+        $original = $query->columns;
+
+        if (is_null($query->columns) || $query->columns === ['*']) {
+            $query->columns = [$this->wrapTable($query->connection->getBucketName()) . '.*'];
+        }
+        if ($query->columns === [$this->wrapTable($query->connection->getBucketName()) . '.*']) {
+            $query->columns[] = self::VIRTUAL_META_ID_COLUMN;
+        }
+        foreach ($query->columns as $i => $column) {
+            $query->columns[$i] = $this->replaceColumnIfMetaId($column, $query, true);
         }
 
-        if(in_array(strtoupper($value), $this->reservedWords) || preg_match('/\s/', $value)) {
-            return '`' . str_replace('"', '""', $value) . '`';
-        }
+        // To compile the query, we'll spin through each component of the query and
+        // see if that component exists. If it does we'll just call the compiler
+        // function for the component which is responsible for making the SQL.
+        $sql = parent::compileSelect($query);
 
-        return $value;
+        $query->columns = $original;
+
+        return $sql;
+    }
+
+    /**
+     * @param \Mpociot\Couchbase\Query\Builder $query
+     * @return string
+     */
+    protected function compileReturning(Builder $query)
+    {
+        return implode(', ', $this->wrapArray($query->returning));
     }
 
     /**
      * Compile a "where null" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $where
+     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  array $where
      * @return string
      */
     protected function whereNull(BaseBuilder $query, $where)
     {
-        return '('.$this->wrap($where['column']).' is null OR '.$this->wrap($where['column']).' is MISSING )';
+        return '(' .
+            $this->wrap($where['column']) .
+            ' is null OR ' .
+            $this->wrap($where['column']) .
+            ' is MISSING )';
     }
 
     /**
      * Compile a "where in" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $where
+     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  array $where
      * @return string
      */
     protected function whereIn(BaseBuilder $query, $where)
     {
-        if (empty($where['values'])) {
-            return '0 = 1';
-        }
+        $values = $this->parameterize($where['values'] ?? []);
 
-        $values = $this->parameterize($where['values']);
+        $where['column'] = $this->replaceColumnIfMetaId($where['column'], $query);
 
-        if ($where['column'] === '_id') {
-            $column = 'meta('.$query->getConnection()->getBucketName().').id';
-            return $column.' in ['.$values.']';
-        } else {
-            return $where['column'].' in ['.$values.']';
-            $colIdentifier = str_random(5);
-            return 'ANY '.$colIdentifier.' IN '.$this->wrap($where['column']).' SATISFIES '.$colIdentifier.' IN ["'.$values.'"]';
-        }
+        return $this->wrap($where['column']) . ' in [' . $values . ']';
+    }
+
+    /**
+     * @param BaseBuilder $query
+     * @param bool $withAs
+     * @return Expression
+     */
+    public function getMetaIdExpression(BaseBuilder $query, $withAs = false)
+    {
+        return new Expression('meta(' . $this->wrapTable($query->getConnection()->getBucketName()) . ').' . $this->wrapValue('id') . ($withAs ? ' as ' . $this->wrapValue(self::VIRTUAL_META_ID_COLUMN) : ''));
     }
 
     /**
      * Compile a "where not in" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $where
+     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  array $where
      * @return string
      */
     protected function whereNotIn(BaseBuilder $query, $where)
     {
-        if (empty($where['values'])) {
-            return '0 = 1';
-        }
+        $values = $this->parameterize($where['values'] ?? []);
 
-        $values = $this->parameterize($where['values']);
+        $where['column'] = $this->replaceColumnIfMetaId($where['column'], $query);
 
-        if ($where['column'] === '_id') {
-            $column = 'meta('.$query->getConnection()->getBucketName().').id';
-            return $column.' not in ['.$values.']';
-        } else {
-            return $where['column'].' not in ['.$values.']';
-            $colIdentifier = str_random(5);
-            return 'ANY '.$colIdentifier.' IN '.$this->wrap($where['column']).' SATISFIES '.$colIdentifier.' IN ["'.$values.'"]';
+        return $this->wrap($where['column']) . ' not in [' . $values . ']';
+    }
+
+    /**
+     * @param string $column
+     * @param BaseBuilder $query
+     * @param bool $withAs
+     * @return Expression|string
+     */
+    private function replaceColumnIfMetaId($column, BaseBuilder $query, $withAs = false)
+    {
+        if (is_string($column) && trim($column, self::IDENTIFIER_ENCLOSURE_CHAR) === self::VIRTUAL_META_ID_COLUMN) {
+            $column = $this->getMetaIdExpression($query, $withAs);
         }
+        return $column;
     }
 
     /**
      * Compile a "where in" clause.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @param  array  $where
+     * @param  Builder $query
+     * @param  array $where
      * @return string
      */
-    protected function whereAnyIn(BaseBuilder $query, $where)
+    protected function whereAnyIn(Builder $query, $where)
     {
-        if (empty($where['values'])) {
-            return '0 = 1';
-        }
+        $values = $this->parameterize($where['values'] ?? []);
 
-        $values = $this->parameterize($where['values']);
-
-        $colIdentifier = str_random(5);
-        return 'ANY '.$colIdentifier.' IN '.$this->wrap($where['column']).' SATISFIES '.$colIdentifier.' IN ["'.$values.'"]';
+        $colIdentifier = str_random(32);
+        return 'ANY ' .
+            $this->wrapValue($colIdentifier) .
+            ' IN ' .
+            $this->wrap($where['column']) .
+            ' SATISFIES ' .
+            $this->wrapValue($colIdentifier) .
+            ' IN [' .
+            $values .
+            '] END';
     }
 
-    public function compileUnset(BaseBuilder $query, array $values)
+    /**
+     * @param \Mpociot\Couchbase\Query\Builder $query
+     * @param array $values
+     * @return string
+     */
+    public function compileUnset(Builder $query, array $values)
     {
         // keyspace-ref:
         $table = $this->wrapTable($query->from);
         // use-keys-clause:
         $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
         // returning-clause
-        $returning = implode(', ', $query->returning);
+        $returning = $this->compileReturning($query);
 
-        $columns = [];
-
-        foreach ($values as $key) {
-            $columns[] = $this->wrap($key);
-        }
+        $columns = $this->wrapArray($values);
 
         $columns = implode(', ', $columns);
 
         $where = $this->compileWheres($query);
-        return trim("update {$table} {$keyClause} unset $columns $where RETURNING {$returning}");
+        return trim("update {$table} {$keyClause} unset {$columns} {$where} RETURNING {$returning}");
     }
 
     /**
@@ -347,7 +282,7 @@ class Grammar extends BaseGrammar
         // use-keys-clause:
         $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
         // returning-clause
-        $returning = implode(', ', $query->returning);
+        $returning = $this->compileReturning($query);
 
         if (!is_array(reset($values))) {
             $values = [$values];
@@ -357,13 +292,13 @@ class Grammar extends BaseGrammar
         foreach ($values as $record) {
             $parameters[] = '(' . $this->parameterize($record) . ')';
         }
-        $parameters = collect($parameters)->transform(function ($parameter) use($keyClause) {
+        $parameters = collect($parameters)->transform(function ($parameter) use ($keyClause) {
             return "({$keyClause}, ?)";
         });
-        $parameters = implode(', ', $parameters->toArray());
+        $parameters = implode(', ', array_fill(0, count($parameters), '?'));
         $keyValue = '(KEY, VALUE)';
 
-        return "insert into {$table} {$keyValue} values $parameters RETURNING {$returning}";
+        return "insert into {$table} {$keyValue} values {$parameters} RETURNING {$returning}";
     }
 
     /**
@@ -378,16 +313,16 @@ class Grammar extends BaseGrammar
         // use-keys-clause:
         $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
         // returning-clause
-        $returning = implode(', ', $query->returning);
+        $returning = $this->compileReturning($query);
 
         $columns = [];
         $unsetColumns = [];
 
         foreach ($values as $key => $value) {
-            if($value instanceof MissingValue){
-                $unsetColumns[] = $this->wrapKey($key);
+            if ($value instanceof MissingValue) {
+                $unsetColumns[] = $this->wrap($key);
             } else {
-                $columns[] = $this->wrapKey($key) . ' = ' . $this->parameter($value);
+                $columns[] = $this->wrap($key) . ' = ' . $this->parameter($value);
             }
         }
 
@@ -399,12 +334,24 @@ class Grammar extends BaseGrammar
         $forIns = [];
         foreach ($query->forIns as $forIn) {
             foreach ($forIn['values'] as $key => $value) {
-                $forIns[] = $this->wrap($key) . ' = "' . $value.'" FOR '.str_singular($forIn['alias']).' IN '.$forIn['alias'].' WHEN '.$forIn['column'].'="'.$this->wrapValue($forIn['value']).'" END';
+                $forIns[] = $this->wrap($key) .
+                    ' = ' .
+                    $this->wrapData($value) .
+                    ' FOR ' .
+                    $this->wrap(str_singular($forIn['alias'])) .
+                    ' IN ' .
+                    $this->wrap($forIn['alias']) .
+                    ' WHEN ' .
+                    $this->wrap($forIn['column']) .
+                    '= ' . $this->wrapData($forIn['value']) .
+                    ' END';
             }
         }
         $forIns = implode(', ', $forIns);
 
-        return trim("update {$table} $keyClause set $columns ".($unsetColumns ? "unset ".$unsetColumns : "")."$forIns $where RETURNING {$returning}");
+        return trim("update {$table} $keyClause set $columns " .
+            ($unsetColumns ? "unset " . $unsetColumns : "") .
+            "{$forIns} {$where} RETURNING {$returning}");
     }
 
     /**
@@ -419,7 +366,7 @@ class Grammar extends BaseGrammar
         // use-keys-clause:
         $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
         // returning-clause
-        $returning = implode(', ', $query->returning);
+        $returning = $this->compileReturning($query);
         $where = is_array($query->wheres) ? $this->compileWheres($query) : '';
 
         return trim("delete from {$table} {$keyClause} {$where} RETURNING {$returning}");
@@ -431,13 +378,13 @@ class Grammar extends BaseGrammar
      */
     public function compileKeys(BaseBuilder $query)
     {
-        if(is_array($query->keys)) {
-            if(empty($query->keys)) {
+        if (is_array($query->keys)) {
+            if (0 === count($query->keys)) {
                 return 'USE KEYS []';
             }
-            return 'USE KEYS [\''.implode('\', \'', $query->keys).'\']';
+            return 'USE KEYS ["' . implode('","', $query->keys) . '"]';
         }
-        return 'USE KEYS \''.$query->keys.'\'';
+        return "USE KEYS \"{$query->keys}\"";
     }
 
     /**

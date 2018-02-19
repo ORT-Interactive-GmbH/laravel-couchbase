@@ -1,4 +1,6 @@
-<?php namespace Mpociot\Couchbase\Relations;
+<?php declare(strict_types=1);
+
+namespace Mpociot\Couchbase\Relations;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -10,8 +12,9 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Initialize the relation on a set of models.
      *
-     * @param  array   $models
-     * @param  string  $relation
+     * @param  array $models
+     * @param  string $relation
+     * @return array
      */
     public function initRelation(array $models, $relation)
     {
@@ -42,7 +45,7 @@ class EmbedsMany extends EmbedsOneOrMany
     {
         // Generate a new key if needed.
 
-        if ($model->getKeyName() == '_id' and ! $model->getKey()) {
+        if ($model->getKeyName() == '_id' and !$model->getKey()) {
             $model->setAttribute('_id', Helper::getUniqueId($model->{Helper::TYPE_NAME}));
         }
         // For deeply nested documents, let the parent handle the changes.
@@ -66,7 +69,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Save an existing model and attach it to the parent model.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  \Illuminate\Database\Eloquent\Model $model
      * @return Model|bool
      */
     public function performUpdate(Model $model)
@@ -84,14 +87,15 @@ class EmbedsMany extends EmbedsOneOrMany
         // Use array dot notation for better update behavior.
         $values = array_dot($model->getDirty(), str_singular($this->localKey) . '.');
         $newValues = [];
-        collect($values)->each(function($value, $key) use (&$newValues) {
+        collect($values)->each(function ($value, $key) use (&$newValues) {
             $key = preg_replace('/\.([0-9])+\./', '[$1].', $key);
             $newValues[$key] = $value;
         })->toArray();
 
         // Update document in database.
-        $result = $this->getBaseQuery()->forIn(str_singular($this->localKey) . '.' . $model->getKeyName(), $foreignKey, $this->localKey, $newValues)
-        ->update([]);
+        $result = $this->getBaseQuery()->forIn(str_singular($this->localKey) . '.' . $model->getKeyName(), $foreignKey,
+            $this->localKey, $newValues)
+            ->update([]);
 
         // Attach the model to its parent.
         if ($result) {
@@ -104,7 +108,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Delete an existing model and detach it from the parent model.
      *
-     * @param  Model  $model
+     * @param  Model $model
      * @return int
      */
     public function performDelete(Model $model)
@@ -131,12 +135,12 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Associate the model instance to the given parent, without saving it to the database.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  \Illuminate\Database\Eloquent\Model $model
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function associate(Model $model)
     {
-        if (! $this->contains($model)) {
+        if (!$this->contains($model)) {
             return $this->associateNew($model);
         } else {
             return $this->associateExisting($model);
@@ -146,7 +150,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Dissociate the model instance from the given parent, without saving it to the database.
      *
-     * @param  mixed  $ids
+     * @param  mixed $ids
      * @return int
      */
     public function dissociate($ids = [])
@@ -175,7 +179,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Destroy the embedded models for the given IDs.
      *
-     * @param  mixed  $ids
+     * @param  mixed $ids
      * @return int
      */
     public function destroy($ids = [])
@@ -217,7 +221,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Destroy alias.
      *
-     * @param  mixed  $ids
+     * @param  mixed $ids
      * @return int
      */
     public function detach($ids = [])
@@ -228,7 +232,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Save alias.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  \Illuminate\Database\Eloquent\Model $model
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function attach(Model $model)
@@ -239,13 +243,13 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Associate a new model instance to the given parent, without saving it to the database.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  \Illuminate\Database\Eloquent\Model $model
      * @return \Illuminate\Database\Eloquent\Model
      */
     protected function associateNew($model)
     {
         // Create a new key if needed.
-        if (! $model->getAttribute('_id')) {
+        if (!$model->getAttribute('_id')) {
             $model->setAttribute('_id', Helper::getUniqueId($model->{Helper::TYPE_NAME}));
         }
 
@@ -260,7 +264,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Associate an existing model instance to the given parent, without saving it to the database.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  \Illuminate\Database\Eloquent\Model $model
      * @return \Illuminate\Database\Eloquent\Model
      */
     protected function associateExisting($model)
@@ -286,7 +290,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Get a paginator for the "select" statement.
      *
-     * @param  int  $perPage
+     * @param  int $perPage
      * @return \Illuminate\Pagination\Paginator
      */
     public function paginate($perPage = null)
@@ -319,11 +323,11 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Set the embedded records array.
      *
-     * @param  array  $models
+     * @param  array $models
      */
     protected function setEmbedded($models)
     {
-        if (! is_array($models)) {
+        if (!is_array($models)) {
             $models = [$models];
         }
 
@@ -333,8 +337,8 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Handle dynamic method calls to the relationship.
      *
-     * @param  string  $method
-     * @param  array   $parameters
+     * @param  string $method
+     * @param  array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)
