@@ -130,6 +130,18 @@ class Builder extends BaseBuilder
      */
     public $keys = null;
 
+    /**
+     * Var used because it is called by magic for compileUse() / has to be not null
+     * @var true
+     */
+    public $use = true;
+
+    /**
+     * Indexes used via 'USE INDEX'
+     * @var array
+     */
+    public $indexes = [];
+
     /** @var string[]  returning-clause */
     public $returning = ['*'];
 
@@ -152,13 +164,36 @@ class Builder extends BaseBuilder
      * @param array|string $keys
      *
      * @return $this
+     * @throws Exception
      */
     public function useKeys($keys)
     {
+        if(!empty($this->indexes)) {
+            throw new Exception('Only one of useKeys or useIndex can be used, not both.');
+        }
         if (is_null($keys)) {
             $keys = [];
         }
         $this->keys = $keys;
+
+        return $this;
+    }
+
+    /**
+     * @param string $name
+     * @param string $type
+     * @return $this
+     * @throws Exception
+     */
+    public function useIndex($name, $type = Grammar::INDEX_TYPE_GSI)
+    {
+        if($this->keys !== null) {
+            throw new Exception('Only one of useKeys or useIndex can be used, not both.');
+        }
+        $this->indexes[] = [
+            'name' => $name,
+            'type' => $type
+        ];
 
         return $this;
     }

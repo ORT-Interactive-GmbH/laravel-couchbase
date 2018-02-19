@@ -2,6 +2,7 @@
 
 namespace Mpociot\Couchbase\Query;
 
+use Exception;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
@@ -9,6 +10,8 @@ use Mpociot\Couchbase\Helper;
 
 class Grammar extends BaseGrammar
 {
+    const INDEX_TYPE_VIEW = 'VIEW';
+    const INDEX_TYPE_GSI = 'GSI';
     const IDENTIFIER_ENCLOSURE_CHAR = '`';
     const VIRTUAL_META_ID_COLUMN = '_id';
 
@@ -40,7 +43,7 @@ class Grammar extends BaseGrammar
         'columns',
         'from',
         'joins',
-        'keys',
+        'use',
         'wheres',
         'groups',
         'havings',
@@ -285,8 +288,8 @@ class Grammar extends BaseGrammar
     {
         // keyspace-ref:
         $table = $this->wrapTable($query->from);
-        // use-keys-clause:
-        $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
+        // use keys/index clause:
+        $useClause = $this->compileUse($query);
         // returning-clause
         $returning = $this->compileReturning($query);
 
@@ -295,7 +298,7 @@ class Grammar extends BaseGrammar
         $columns = implode(', ', $columns);
 
         $where = $this->compileWheres($query);
-        return trim("update {$table} {$keyClause} unset {$columns} {$where} RETURNING {$returning}");
+        return trim("update {$table} {$useClause} unset {$columns} {$where} RETURNING {$returning}");
     }
 
     /**
@@ -328,8 +331,8 @@ class Grammar extends BaseGrammar
     {
         // keyspace-ref:
         $table = $this->wrapTable($query->from);
-        // use-keys-clause:
-        $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
+        // use keys/index clause:
+        $useClause = $this->compileUse($query);
         // returning-clause
         $returning = $this->compileReturning($query);
 
@@ -367,7 +370,7 @@ class Grammar extends BaseGrammar
         }
         $forIns = implode(', ', $forIns);
 
-        return trim("update {$table} $keyClause set $columns " .
+        return trim("update {$table} $useClause set $columns " .
             ($unsetColumns ? "unset " . $unsetColumns : "") .
             "{$forIns} {$where} RETURNING {$returning}");
     }
@@ -381,28 +384,40 @@ class Grammar extends BaseGrammar
     {
         // keyspace-ref:
         $table = $this->wrapTable($query->from);
-        // use-keys-clause:
-        $keyClause = is_null($query->keys) ? null : $this->compileKeys($query);
+        // use keys/index clause:
+        $useClause = $this->compileUse($query);
         // returning-clause
         $returning = $this->compileReturning($query);
         $where = is_array($query->wheres) ? $this->compileWheres($query) : '';
 
-        return trim("delete from {$table} {$keyClause} {$where} RETURNING {$returning}");
+        return trim("delete from {$table} {$useClause} {$where} RETURNING {$returning}");
     }
 
     /**
-     * @param BaseBuilder $query
+     * @param Builder $query
      * @return string
+     * @throws Exception
      */
-    public function compileKeys(BaseBuilder $query)
+    public function compileUse(Builder $query)
     {
-        if (is_array($query->keys)) {
-            if (0 === count($query->keys)) {
-                return 'USE KEYS []';
-            }
-            return 'USE KEYS ["' . implode('","', $query->keys) . '"]';
+        if($query->keys !== null && !empty($query->indexes)) {
+            throw new Exception('Only one of useKeys or useIndex can be used, not both.');
         }
-        return "USE KEYS \"{$query->keys}\"";
+
+        if($query->keys !== null) {
+            return 'USE KEYS '.$this->wrapData($query->keys);
+        }
+
+        if(!empty($query->indexes)) {
+            return 'USE INDEX ('.implode(', ', array_map(function($index){
+                if(!in_array($index['type'], [self::INDEX_TYPE_VIEW, self::INDEX_TYPE_GSI])) {
+                    throw new Exception('Unsupported index type '.json_encode($index['type']).'.');
+                }
+                return $this->wrapValue($index['name']).' USING '.$index['type'];
+            }, $query->indexes)).')';
+        }
+
+        return '';
     }
 
     /**
