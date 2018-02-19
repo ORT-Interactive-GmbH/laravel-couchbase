@@ -38,6 +38,9 @@ class Connection extends \Illuminate\Database\Connection
      */
     protected $bucketname;
 
+    /** @var boolean */
+    protected $inlineParameters;
+
     /**
      * Create a new database connection instance.
      *
@@ -70,6 +73,8 @@ class Connection extends \Illuminate\Database\Connection
         // Select database
         $this->bucketname = $config['bucket'];
         $this->bucket = $this->connection->openBucket($this->bucketname);
+
+        $this->inlineParameters = isset($config['inline_parameters']) ? (bool)$config['inline_parameters'] : false;
 
         $this->useDefaultQueryGrammar();
 
@@ -323,6 +328,14 @@ class Connection extends \Illuminate\Database\Connection
     }
 
     /**
+     * @return boolean
+     */
+    public function hasInlineParameters()
+    {
+        return $this->inlineParameters;
+    }
+
+    /**
      * return CouchbaseCluster object.
      *
      * @return \CouchbaseCluster
@@ -414,6 +427,16 @@ class Connection extends \Illuminate\Database\Connection
     protected function getDefaultSchemaGrammar()
     {
         return new Schema\Grammar;
+    }
+
+    /**
+     * Get the default schema grammar instance.
+     *
+     * @return Query\Grammar
+     */
+    protected function getDefaultQueryGrammar()
+    {
+        return new Query\Grammar($this->hasInlineParameters());
     }
 
     /**

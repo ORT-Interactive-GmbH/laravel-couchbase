@@ -15,6 +15,22 @@ class Grammar extends BaseGrammar
     const IDENTIFIER_ENCLOSURE_CHAR = '`';
     const VIRTUAL_META_ID_COLUMN = '_id';
 
+    /** @var bool */
+    protected $inlineParameters;
+
+    public function __construct($inlineParameters)
+    {
+        $this->inlineParameters = (bool)$inlineParameters;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function hasInlineParameters()
+    {
+        return $this->inlineParameters;
+    }
+
     /**
      * The components that make up a select clause.
      *
@@ -171,6 +187,20 @@ class Grammar extends BaseGrammar
     }
 
     /**
+     * Compile a "between" where clause.
+     *
+     * @param  BaseBuilder $query
+     * @param  array $where
+     * @return string
+     */
+    protected function whereBetween(BaseBuilder $query, $where)
+    {
+        $between = $where['not'] ? 'not between' : 'between';
+
+        return $this->wrap($where['column']) . ' ' . $between . ' ' . $this->parameter($where['values'][0]) . ' and ' . $this->parameter($where['values'][1]);
+    }
+
+    /**
      * Compile a "where in" clause.
      *
      * @param  \Illuminate\Database\Query\Builder $query
@@ -276,32 +306,20 @@ class Grammar extends BaseGrammar
      */
     public function compileInsert(BaseBuilder $query, array $values)
     {
-        // keyspace-ref:
-        $table = $this->wrapTable($query->from);
-        // use-keys-clause:
-        if (is_null($query->keys)) {
-            $query->useKeys(Helper::getUniqueId($values[Helper::TYPE_NAME]));
-        }
-        // use keys/index clause:
-        $useClause = $this->compileUse($query);
-        // returning-clause
-        $returning = $this->compileReturning($query);
+        throw new \Exception('Inserts are done via CouchbaseBucket->upsert(), this method should not be used.');
+    }
 
-        if (!is_array(reset($values))) {
-            $values = [$values];
-        }
-        $parameters = [];
-
-        foreach ($values as $record) {
-            $parameters[] = '(' . $this->parameterize($record) . ')';
-        }
-        $parameters = collect($parameters)->transform(function ($parameter) use ($keyClause) {
-            return "({$keyClause}, ?)";
-        });
-        $parameters = implode(', ', array_fill(0, count($parameters), '?'));
-        $keyValue = '(KEY, VALUE)';
-
-        return "insert into {$table} {$useClause} values {$parameters} RETURNING {$returning}";
+    /**
+     * Get the appropriate query parameter place-holder for a value.
+     *
+     * @param  mixed $value
+     * @return string
+     */
+    public function parameter($value)
+    {
+        return $this->isExpression($value)
+            ? $this->getValue($value)
+            : ($this->hasInlineParameters() ? $this->wrapData($value) : '?');
     }
 
     /**
