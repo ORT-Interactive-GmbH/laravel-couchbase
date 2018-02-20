@@ -253,4 +253,15 @@ class QueryTest extends TestCase
         $this->assertEquals(9, $results->total());
         $this->assertEquals(1, $results->currentPage());
     }
+
+    public function testPluckIdId()
+    {
+        $result = User::query()->pluck('_id', '_id');
+        $this->assertInstanceOf(Illuminate\Support\Collection::class, $result);
+        $this->assertGreaterThan(0, $result->count());
+        foreach ($result as $key => $value) {
+            $this->assertEquals($key, $value);
+        }
+    }
+
 }

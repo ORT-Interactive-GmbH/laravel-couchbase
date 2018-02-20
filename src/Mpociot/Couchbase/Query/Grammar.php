@@ -147,6 +147,9 @@ class Grammar extends BaseGrammar
         if ($query->columns === [$this->wrapTable($query->connection->getBucketName()) . '.*']) {
             $query->columns[] = self::VIRTUAL_META_ID_COLUMN;
         }
+
+        $query->columns = array_unique($query->columns);
+
         foreach ($query->columns as $i => $column) {
             $query->columns[$i] = $this->replaceColumnIfMetaId($column, $query, true);
         }
