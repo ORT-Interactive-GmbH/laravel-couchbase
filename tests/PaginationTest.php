@@ -5,6 +5,7 @@ class PaginationTest extends TestCase
     public function tearDown()
     {
         User::truncate();
+        parent::tearDown();
     }
 
     /**

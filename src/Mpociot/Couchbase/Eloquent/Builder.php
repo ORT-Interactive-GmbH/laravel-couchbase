@@ -95,7 +95,7 @@ class Builder extends EloquentBuilder
         /** @var QueryBuilder $query */
         $query = $builder->getQuery();
 
-        $rawResult = $query->getWithMeta();
+        $rawResult = $query->getWithMeta($columns);
         if (isset($rawResult->metrics['sortCount'])) {
             $total = $rawResult->metrics['sortCount'];
         } else {
