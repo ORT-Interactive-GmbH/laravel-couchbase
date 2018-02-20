@@ -95,13 +95,7 @@ class Builder extends EloquentBuilder
         /** @var QueryBuilder $query */
         $query = $builder->getQuery();
 
-        // first check if result is ordered, else `metrics.sortCount` is not set :/
-        if (empty($query->orders)) {
-            // should not go here...
-            return parent::paginate($perPage, $columns, $pageName, $page);
-        }
-
-        $rawResult = $query->getWithMeta();
+        $rawResult = $query->getWithMeta($columns);
         if (isset($rawResult->metrics['sortCount'])) {
             $total = $rawResult->metrics['sortCount'];
         } else {
@@ -109,7 +103,7 @@ class Builder extends EloquentBuilder
                 $total = 0;
             } else {
                 // should not go here...
-                $total = $this->getCountForPagination();
+                $total = $query->getCountForPagination();
             }
         }
         // If we actually found models we will also eager load any relationships that
