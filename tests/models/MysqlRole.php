@@ -1,5 +1,6 @@
-<?php
+<?php declare(strict_types=1);
 
+use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Support\Facades\Schema;
 use Mpociot\Couchbase\Eloquent\HybridRelations;
 
@@ -29,11 +30,12 @@ class MysqlRole extends Eloquent
         $schema = Schema::connection('mysql');
 
         if (!$schema->hasTable('roles')) {
-            Schema::connection('mysql')->create('roles', function ($table) {
-                $table->string('type');
-                $table->string('user_id');
-                $table->timestamps();
-            });
+            Schema::connection('mysql')->create('roles',
+                function ($table) {
+                    $table->string('type');
+                    $table->string('user_id');
+                    $table->timestamps();
+                });
         }
     }
 }

@@ -1,4 +1,6 @@
-<?php namespace Mpociot\Couchbase\Relations;
+<?php declare(strict_types=1);
+
+namespace Mpociot\Couchbase\Relations;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,6 +28,7 @@ class HasMany extends EloquentHasMany
     {
         return $this->getForeignKeyName();
     }
+
     /**
      * @inheritdoc
      */
@@ -39,8 +42,8 @@ class HasMany extends EloquentHasMany
     /**
      * Add the constraints for a relationship query.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  \Illuminate\Database\Eloquent\Builder  $parent
+     * @param  \Illuminate\Database\Eloquent\Builder $query
+     * @param  \Illuminate\Database\Eloquent\Builder $parent
      * @param  array|mixed $columns
      * @return \Illuminate\Database\Eloquent\Builder
      */
@@ -71,13 +74,13 @@ class HasMany extends EloquentHasMany
             $keys = $model->getAttribute($this->localKey);
             if (is_array($keys)) {
                 $result = collect();
-                foreach($keys as $key) {
+                foreach ($keys as $key) {
                     if (isset($dictionary[$key])) {
                         if (!is_array($dictionary[$key])) {
                             $result[] = $dictionary[$key];
                             continue;
                         }
-                        foreach($dictionary[$key] as $object) {
+                        foreach ($dictionary[$key] as $object) {
                             $result[] = $object;
                         }
                     }

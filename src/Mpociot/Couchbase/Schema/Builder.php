@@ -1,4 +1,6 @@
-<?php namespace Mpociot\Couchbase\Schema;
+<?php declare(strict_types=1);
+
+namespace Mpociot\Couchbase\Schema;
 
 use Closure;
 use Mpociot\Couchbase\Connection;
@@ -8,19 +10,19 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Create a new database Schema manager.
      *
-     * @param  Connection  $connection
+     * @param  Connection $connection
      */
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->grammar    = $connection->getSchemaGrammar();
+        $this->grammar = $connection->getSchemaGrammar();
     }
 
     /**
      * Determine if the given table has a given column.
      *
-     * @param  string  $table
-     * @param  string  $column
+     * @param  string $table
+     * @param  string $column
      * @return bool
      */
     public function hasColumn($table, $column)
@@ -31,8 +33,8 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Determine if the given table has given columns.
      *
-     * @param  string  $table
-     * @param  array   $columns
+     * @param  string $table
+     * @param  array $columns
      * @return bool
      */
     public function hasColumns($table, array $columns)
@@ -43,7 +45,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Determine if the given collection exists.
      *
-     * @param  string  $collection
+     * @param  string $collection
      * @return bool
      */
     public function hasTable($collection)
@@ -54,8 +56,8 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Modify a collection on the schema.
      *
-     * @param  string   $collection
-     * @param  Closure  $callback
+     * @param  string $collection
+     * @param  Closure $callback
      * @return bool
      */
     public function table($collection, Closure $callback)
@@ -66,8 +68,8 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Create a new collection on the schema.
      *
-     * @param  string   $collection
-     * @param  Closure  $callback
+     * @param  string $collection
+     * @param  Closure $callback
      * @return bool
      */
     public function create($collection, Closure $callback = null)
@@ -78,7 +80,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Drop a collection from the schema.
      *
-     * @param  string  $collection
+     * @param  string $collection
      * @return bool
      */
     public function drop($collection)
@@ -89,7 +91,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Create a new Blueprint.
      *
-     * @param  string   $collection
+     * @param  string $collection
      * @return Blueprint
      */
     protected function createBlueprint($collection, Closure $callback = null)

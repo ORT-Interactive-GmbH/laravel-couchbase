@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * Created by PhpStorm.
  * User: sascha.presnac
@@ -15,6 +15,6 @@ class Helper
 
     public static function getUniqueId($praefix = null)
     {
-        return (($praefix !== null) ? $praefix.'::' : '').uniqid();
+        return (($praefix !== null) ? $praefix . '::' : '') . uniqid();
     }
 }

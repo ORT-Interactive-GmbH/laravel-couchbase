@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 use Mpociot\Couchbase\Eloquent\Model as Eloquent;
 
@@ -10,7 +10,7 @@ class Book extends Eloquent
 
     public function author()
     {
-        return $this->belongsTo( User::class, 'author_id');
+        return $this->belongsTo(User::class, 'author_id');
     }
 
     public function mysqlAuthor()
