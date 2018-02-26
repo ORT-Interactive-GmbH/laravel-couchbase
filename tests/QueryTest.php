@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+use Mpociot\Couchbase\Query\MissingValue;
+
 class QueryTest extends TestCase
 {
     protected static $started = false;
@@ -322,6 +324,140 @@ class QueryTest extends TestCase
         foreach ($result as $key => $value) {
             $this->assertEquals($key, $value);
         }
+    }
+
+    /**
+     * @group QueryTest
+     * @group MissingValue
+     */
+    public function testCreateWithMissingValue()
+    {
+        $user = User::create([
+            'firstname' => 'Max1',
+            'lastname' => 'Mustermann',
+            'username' => MissingValue::getMissingValue()
+        ]);
+
+        $this->assertEquals('Max1', $user->firstname);
+        $this->assertArrayHasKey('firstname', $user->getAttributes());
+        $this->assertEquals('Mustermann', $user->lastname);
+        $this->assertArrayHasKey('lastname', $user->getAttributes());
+        $this->assertEquals(null, $user->username);
+        $this->assertArrayNotHasKey('username', $user->getAttributes());
+
+        $user->refresh();
+
+        $this->assertEquals('Max1', $user->firstname);
+        $this->assertArrayHasKey('firstname', $user->getAttributes());
+        $this->assertEquals('Mustermann', $user->lastname);
+        $this->assertArrayHasKey('lastname', $user->getAttributes());
+        $this->assertEquals(null, $user->username);
+        $this->assertArrayNotHasKey('username', $user->getAttributes());
+    }
+
+    /**
+     * @group QueryTest
+     * @group MissingValue
+     */
+    public function testUpdateViaAttributesWithMissingValue()
+    {
+        $user = User::create([
+            'firstname' => 'Max2',
+            'lastname' => 'Mustermann',
+            'username' => 'max.mustermann'
+        ]);
+        $this->assertEquals('Max2', $user->firstname);
+        $this->assertEquals('max.mustermann', $user->username);
+        $this->assertArrayHasKey('username', $user->getAttributes());
+
+        $user->username = MissingValue::getMissingValue();
+        $this->assertEquals('Max2', $user->firstname);
+        $this->assertEquals(MissingValue::getMissingValue(), $user->username);
+        $this->assertArrayHasKey('username', $user->getAttributes());
+        $user->save();
+
+        $this->assertEquals('Max2', $user->firstname);
+        $this->assertEquals(null, $user->username);
+        $this->assertArrayNotHasKey('username', $user->getAttributes());
+
+        $user->refresh();
+
+        $this->assertEquals('Max2', $user->firstname);
+        $this->assertEquals(null, $user->username);
+        $this->assertArrayNotHasKey('username', $user->getAttributes());
+    }
+
+    /**
+     * @group QueryTest
+     * @group MissingValue
+     */
+    public function testUpdateViaMethodWithMissingValue()
+    {
+        $user = User::create([
+            'firstname' => 'Max3',
+            'lastname' => 'Mustermann',
+            'username' => 'max.mustermann'
+        ]);
+        $this->assertEquals('Max3', $user->firstname);
+        $this->assertEquals('max.mustermann', $user->username);
+        $this->assertArrayHasKey('username', $user->getAttributes());
+
+        $user->update([
+            'username' => MissingValue::getMissingValue()
+        ]);
+
+        $this->assertEquals('Max3', $user->firstname);
+        $this->assertEquals(null, $user->username);
+        $this->assertArrayNotHasKey('username', $user->getAttributes());
+
+        $user->refresh();
+
+        $this->assertEquals('Max3', $user->firstname);
+        $this->assertEquals(null, $user->username);
+        $this->assertArrayNotHasKey('username', $user->getAttributes());
+    }
+
+    /**
+     * @group QueryTest
+     * @group MissingValue
+     */
+    public function testUpdateWithMissingValueInSubLevel()
+    {
+        $user = User::create([
+            'firstname' => 'Max4',
+            'lastname' => 'Mustermann',
+            'data' => [
+                'foo' => 'bar',
+                'abc' => 'def'
+            ]
+        ]);
+        $this->assertEquals('Max4', $user->firstname);
+        $this->assertEquals([
+            'foo' => 'bar',
+            'abc' => 'def'
+        ], $user->data);
+        $this->assertArrayHasKey('foo', $user->data);
+
+        $user->update([
+            'data' => [
+                'foo' => MissingValue::getMissingValue(),
+                'abc' => 'def'
+            ]
+        ]);
+
+        $this->assertEquals('Max4', $user->firstname);
+        $this->assertEquals([
+            'abc' => 'def'
+        ], $user->data);
+        $this->assertArrayNotHasKey('foo', $user->data);
+
+        $user->refresh();
+
+        $this->assertEquals('Max4', $user->firstname);
+        $this->assertEquals([
+            'abc' => 'def'
+        ], $user->data);
+        $this->assertArrayNotHasKey('foo', $user->data);
     }
 
 }
