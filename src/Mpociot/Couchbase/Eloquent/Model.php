@@ -1,8 +1,12 @@
-<?php declare(strict_types=1); namespace Mpociot\Couchbase\Eloquent;
+<?php declare(strict_types=1);
+
+namespace Mpociot\Couchbase\Eloquent;
 
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Arr;
 use Mpociot\Couchbase\Query\Builder as QueryBuilder;
+use Mpociot\Couchbase\Query\Grammar;
 use Mpociot\Couchbase\Relations\EmbedsMany;
 use Mpociot\Couchbase\Relations\EmbedsOne;
 use Illuminate\Support\Str;
@@ -281,7 +285,7 @@ abstract class Model extends BaseModel
         }
 
         // Perform unset only on current document
-        return $this->newQuery()->where($this->getKeyName(), $this->getKey())->unset($columns);
+        return $this->newQuery()->useKeys([$this->getKey()])->unset($columns);
     }
 
     /**
@@ -425,6 +429,25 @@ abstract class Model extends BaseModel
         $connection = $this->getConnection();
 
         return new QueryBuilder($connection, $connection->getPostProcessor());
+    }
+
+    /**
+     * Perform any actions that are necessary after the model is saved.
+     *
+     * @param  array $options
+     * @return void
+     */
+    protected function finishSave(array $options)
+    {
+        $this->attributes = Grammar::removeMissingValue($this->attributes);
+
+        $this->fireModelEvent('saved', false);
+
+        $this->syncOriginal();
+
+        if (Arr::get($options, 'touch', true)) {
+            $this->touchOwners();
+        }
     }
 
     /**

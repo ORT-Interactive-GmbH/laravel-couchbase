@@ -460,4 +460,67 @@ class QueryTest extends TestCase
         $this->assertArrayNotHasKey('foo', $user->data);
     }
 
+    /**
+     * @group QueryTest
+     * @group MissingValue
+     */
+    public function testDropValue()
+    {
+        $user = User::create([
+            'firstname' => 'Max6',
+            'lastname' => 'Mustermann',
+            'username' => 'foobar'
+        ]);
+        $this->assertEquals('Max6', $user->firstname);
+        $this->assertArrayHasKey('username', $user->getAttributes());
+        $this->assertEquals('foobar', $user->username);
+
+        $user->drop(['username']);
+
+        $this->assertEquals('Max6', $user->firstname);
+        $this->assertEquals(null, $user->username);
+        $this->assertArrayNotHasKey('username', $user->getAttributes());
+
+        $user->refresh();
+
+        $this->assertEquals('Max6', $user->firstname);
+        $this->assertEquals(null, $user->username);
+        $this->assertArrayNotHasKey('username', $user->getAttributes());
+    }
+
+    /**
+     * @group QueryTest
+     * @group MissingValue
+     */
+    public function testDropValues()
+    {
+        $user = User::create([
+            'firstname' => 'Max7',
+            'lastname' => 'Mustermann',
+            'username1' => 'foobar',
+            'username2' => 'foobar2'
+        ]);
+        $this->assertEquals('Max7', $user->firstname);
+        $this->assertArrayHasKey('username1', $user->getAttributes());
+        $this->assertArrayHasKey('username2', $user->getAttributes());
+        $this->assertEquals('foobar', $user->username1);
+        $this->assertEquals('foobar2', $user->username2);
+
+        $user->drop(['username1', 'username2']);
+
+        $this->assertEquals('Max7', $user->firstname);
+        $this->assertEquals(null, $user->username1);
+        $this->assertEquals(null, $user->username2);
+        $this->assertArrayNotHasKey('username1', $user->getAttributes());
+        $this->assertArrayNotHasKey('username2', $user->getAttributes());
+
+        $user->refresh();
+
+        $this->assertEquals('Max7', $user->firstname);
+        $this->assertEquals(null, $user->username1);
+        $this->assertEquals(null, $user->username2);
+        $this->assertArrayNotHasKey('username1', $user->getAttributes());
+        $this->assertArrayNotHasKey('username2', $user->getAttributes());
+    }
+
 }

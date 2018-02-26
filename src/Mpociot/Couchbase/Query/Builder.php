@@ -168,7 +168,7 @@ class Builder extends BaseBuilder
      */
     public function useKeys($keys)
     {
-        if(!empty($this->indexes)) {
+        if (!empty($this->indexes)) {
             throw new Exception('Only one of useKeys or useIndex can be used, not both.');
         }
         if (is_null($keys)) {
@@ -187,7 +187,7 @@ class Builder extends BaseBuilder
      */
     public function useIndex($name, $type = Grammar::INDEX_TYPE_GSI)
     {
-        if($this->keys !== null) {
+        if ($this->keys !== null) {
             throw new Exception('Only one of useKeys or useIndex can be used, not both.');
         }
         $this->indexes[] = [
@@ -414,15 +414,15 @@ class Builder extends BaseBuilder
     /**
      * Set the bindings on the query builder.
      *
-     * @param  array   $bindings
-     * @param  string  $type
+     * @param  array $bindings
+     * @param  string $type
      * @return $this
      *
      * @throws \InvalidArgumentException
      */
     public function setBindings(array $bindings, $type = 'where')
     {
-        if($this->getConnection()->hasInlineParameters()) {
+        if ($this->getConnection()->hasInlineParameters()) {
             return $this;
         }
         return parent::setBindings($bindings, $type);
@@ -431,15 +431,15 @@ class Builder extends BaseBuilder
     /**
      * Add a binding to the query.
      *
-     * @param  mixed   $value
-     * @param  string  $type
+     * @param  mixed $value
+     * @param  string $type
      * @return $this
      *
      * @throws \InvalidArgumentException
      */
     public function addBinding($value, $type = 'where')
     {
-        if($this->getConnection()->hasInlineParameters()) {
+        if ($this->getConnection()->hasInlineParameters()) {
             return $this;
         }
         return parent::addBinding($value, $type);
@@ -488,14 +488,30 @@ class Builder extends BaseBuilder
             foreach ($values as &$value) {
                 $value[Helper::TYPE_NAME] = $this->type;
                 $key = Helper::getUniqueId($this->type);
-                $result = $this->connection->getCouchbaseBucket()->upsert($key, $value);
+                $result = $this->connection->getCouchbaseBucket()->upsert($key, Grammar::removeMissingValue($value));
             }
         } else {
             $values[Helper::TYPE_NAME] = $this->type;
-            $result = $this->connection->getCouchbaseBucket()->upsert($this->keys, $values);
+            $result = $this->connection->getCouchbaseBucket()->upsert($this->keys,
+                Grammar::removeMissingValue($values));
         }
 
         return $result;
+    }
+
+    /**
+     * Update a record in the database.
+     *
+     * @param  array $values
+     * @return int
+     */
+    public function update(array $values)
+    {
+        // replace MissingValue in 2nd or deeper levels
+        foreach ($values as $key => $value) {
+            $values[$key] = Grammar::removeMissingValue($value);
+        }
+        return parent::update($values);
     }
 
     /**

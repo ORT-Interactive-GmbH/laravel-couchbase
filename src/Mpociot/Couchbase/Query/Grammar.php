@@ -3,10 +3,10 @@
 namespace Mpociot\Couchbase\Query;
 
 use Exception;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
-use Mpociot\Couchbase\Helper;
 
 class Grammar extends BaseGrammar
 {
@@ -21,6 +21,30 @@ class Grammar extends BaseGrammar
     public function __construct($inlineParameters)
     {
         $this->inlineParameters = (bool)$inlineParameters;
+    }
+
+    public static function removeMissingValue($values)
+    {
+        if (is_array($values) || $values instanceof Arrayable || $values instanceof \stdClass) {
+            foreach ($values as $key => $value) {
+                if ($value instanceof MissingValue) {
+                    if ($values instanceof \stdClass) {
+                        unset($values->{$key});
+                    } else {
+                        unset($values[$key]);
+                    }
+                } else {
+                    $newValue = self::removeMissingValue($value);
+                    if ($values instanceof \stdClass) {
+                        $values->{$key} = $newValue;
+                    } else {
+                        $values[$key] = $newValue;
+                    }
+                }
+            }
+        }
+
+        return $values;
     }
 
     /**
@@ -120,6 +144,7 @@ class Grammar extends BaseGrammar
      */
     public static function wrapData($value)
     {
+        $value = self::removeMissingValue($value);
         $data = json_encode($value);
         if (JSON_ERROR_NONE !== json_last_error()) {
             throw new \InvalidArgumentException(
@@ -403,21 +428,21 @@ class Grammar extends BaseGrammar
      */
     public function compileUse(Builder $query)
     {
-        if($query->keys !== null && !empty($query->indexes)) {
+        if ($query->keys !== null && !empty($query->indexes)) {
             throw new Exception('Only one of useKeys or useIndex can be used, not both.');
         }
 
-        if($query->keys !== null) {
-            return 'USE KEYS '.$this->wrapData($query->keys);
+        if ($query->keys !== null) {
+            return 'USE KEYS ' . $this->wrapData($query->keys);
         }
 
-        if(!empty($query->indexes)) {
-            return 'USE INDEX ('.implode(', ', array_map(function($index){
-                if(!in_array($index['type'], [self::INDEX_TYPE_VIEW, self::INDEX_TYPE_GSI])) {
-                    throw new Exception('Unsupported index type '.json_encode($index['type']).'.');
-                }
-                return $this->wrapValue($index['name']).' USING '.$index['type'];
-            }, $query->indexes)).')';
+        if (!empty($query->indexes)) {
+            return 'USE INDEX (' . implode(', ', array_map(function ($index) {
+                    if (!in_array($index['type'], [self::INDEX_TYPE_VIEW, self::INDEX_TYPE_GSI])) {
+                        throw new Exception('Unsupported index type ' . json_encode($index['type']) . '.');
+                    }
+                    return $this->wrapValue($index['name']) . ' USING ' . $index['type'];
+                }, $query->indexes)) . ')';
         }
 
         return '';
