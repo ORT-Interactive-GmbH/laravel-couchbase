@@ -452,4 +452,65 @@ class ModelTest extends TestCase
 
         $this->assertEquals('Strasbourg', $user['address.city']);
     }
+
+    public function testModelExists1()
+    {
+        $user = new User();
+        $this->assertFalse($user->exists);
+        $this->assertFalse($user->exists());
+        $user->save();
+        $this->assertTrue($user->exists);
+        $this->assertTrue($user->exists());
+        $user->delete();
+        $this->assertFalse($user->exists);
+        $this->assertFalse($user->exists());
+    }
+
+    public function testModelExists2()
+    {
+        $user = new User();
+        $this->assertFalse($user->exists());
+        $this->assertFalse($user->exists);
+        $user->save();
+        $this->assertTrue($user->exists());
+        $this->assertTrue($user->exists);
+        $user->delete();
+        $this->assertFalse($user->exists());
+        $this->assertFalse($user->exists);
+    }
+
+    public function testModelExistsWithOtherExisting1()
+    {
+        User::create([
+            'name' => 'John Doe'
+        ]);
+
+        $user = new User();
+        $this->assertFalse($user->exists);
+        $this->assertFalse($user->exists());
+        $user->save();
+        $this->assertTrue($user->exists);
+        $this->assertTrue($user->exists());
+        $user->delete();
+        $this->assertFalse($user->exists);
+        $this->assertFalse($user->exists());
+    }
+
+    public function testModelExistsWithOtherExisting2()
+    {
+        User::create([
+            'name' => 'John Doe'
+        ]);
+
+        $user = new User();
+        $this->assertFalse($user->exists());
+        $this->assertFalse($user->exists);
+        $user->save();
+        $this->assertTrue($user->exists());
+        $this->assertTrue($user->exists);
+        $user->delete();
+        $this->assertFalse($user->exists());
+        $this->assertFalse($user->exists);
+    }
+
 }
