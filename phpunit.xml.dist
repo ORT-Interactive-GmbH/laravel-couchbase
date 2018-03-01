@@ -14,7 +14,6 @@
     <testsuites>
         <testsuite name="all">
             <directory>tests/</directory>
-            <exclude>tests/MysqlRelationsTest.php</exclude>
         </testsuite>
         <testsuite name="schema">
             <directory>tests/SchemaTest.php</directory>

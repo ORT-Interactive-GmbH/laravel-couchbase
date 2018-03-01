@@ -15,14 +15,6 @@ class Grammar extends BaseGrammar
     const IDENTIFIER_ENCLOSURE_CHAR = '`';
     const VIRTUAL_META_ID_COLUMN = '_id';
 
-    /** @var bool */
-    protected $inlineParameters;
-
-    public function __construct($inlineParameters)
-    {
-        $this->inlineParameters = (bool)$inlineParameters;
-    }
-
     public static function removeMissingValue($values)
     {
         if (is_array($values) || $values instanceof Arrayable || $values instanceof \stdClass) {
@@ -45,14 +37,6 @@ class Grammar extends BaseGrammar
         }
 
         return $values;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function hasInlineParameters()
-    {
-        return $this->inlineParameters;
     }
 
     /**
@@ -245,6 +229,18 @@ class Grammar extends BaseGrammar
     }
 
     /**
+     * Compile a raw where clause.
+     *
+     * @param  BaseBuilder $query
+     * @param  array $where
+     * @return string
+     */
+    protected function whereRaw(BaseBuilder $query, $where)
+    {
+        return $where['sql'];
+    }
+
+    /**
      * @param BaseBuilder $query
      * @param bool $withAs
      * @return Expression
@@ -314,19 +310,11 @@ class Grammar extends BaseGrammar
      */
     public function compileUnset(Builder $query, array $values)
     {
-        // keyspace-ref:
-        $table = $this->wrapTable($query->from);
-        // use keys/index clause:
-        $useClause = $this->compileUse($query);
-        // returning-clause
-        $returning = $this->compileReturning($query);
-
-        $columns = $this->wrapArray($values);
-
-        $columns = implode(', ', $columns);
-
-        $where = $this->compileWheres($query);
-        return trim("update {$table} {$useClause} unset {$columns} {$where} RETURNING {$returning}");
+        $newValues = [];
+        foreach ($values as $value) {
+            $newValues[$value] = MissingValue::getMissingValue();
+        }
+        return $this->compileUpdate($query, $newValues);
     }
 
     /**
@@ -335,19 +323,6 @@ class Grammar extends BaseGrammar
     public function compileInsert(BaseBuilder $query, array $values)
     {
         throw new \Exception('Inserts are done via CouchbaseBucket->upsert(), this method should not be used.');
-    }
-
-    /**
-     * Get the appropriate query parameter place-holder for a value.
-     *
-     * @param  mixed $value
-     * @return string
-     */
-    public function parameter($value)
-    {
-        return $this->isExpression($value)
-            ? $this->getValue($value)
-            : ($this->hasInlineParameters() ? $this->wrapData($value) : '?');
     }
 
     /**
@@ -375,9 +350,6 @@ class Grammar extends BaseGrammar
             }
         }
 
-        $columns = implode(', ', $columns);
-        $unsetColumns = implode(', ', $unsetColumns);
-
         $where = $this->compileWheres($query);
 
         $forIns = [];
@@ -396,11 +368,16 @@ class Grammar extends BaseGrammar
                     ' END';
             }
         }
-        $forIns = implode(', ', $forIns);
 
-        return trim("update {$table} $useClause set $columns " .
-            ($unsetColumns ? "unset " . $unsetColumns : "") .
-            "{$forIns} {$where} RETURNING {$returning}");
+        $setColumns = implode(', ', $columns + $forIns);
+        $unsetColumns = implode(', ', $unsetColumns);
+
+        return trim('update ' . $table
+            . ' ' . $useClause
+            . ($setColumns ? (' set ' . $setColumns) : '')
+            . ($unsetColumns ? (' unset ' . $unsetColumns) : '')
+            . ' ' . $where
+            . ' RETURNING ' . $returning);
     }
 
     /**
@@ -463,6 +440,92 @@ class Grammar extends BaseGrammar
             $values = collect($values)->flatten()->toArray();
         }
         return parent::parameterize($values);
+    }
+
+    /**
+     * @param string $sql
+     * @param array $bindings
+     * @return string
+     */
+    public function applyBindings(string $sql, array $bindings)
+    {
+        $shiftIdentifier = function (string $sql) {
+            preg_match('/^`(``|[^`])*`/u', $sql, $match);
+            $length = isset($match[0]) ? mb_strlen($match[0]) : mb_strlen($sql);
+            return [mb_substr($sql, 0, $length), mb_substr($sql, $length)];
+        };
+        $shiftLiteralSinglequote = function (string $sql) {
+            preg_match('/^\'(\'\'|[^\'])*\'/u', $sql, $match);
+            $length = isset($match[0]) ? mb_strlen($match[0]) : mb_strlen($sql);
+            return [mb_substr($sql, 0, $length), mb_substr($sql, $length)];
+        };
+        $shiftLiteralDoublequote = function (string $sql) use ($bindings) {
+            preg_match('/^"(\\\\\\\\|\\\\[^\\\\]|[^\\\\"])*"/u', $sql, $match);
+            $length = isset($match[0]) ? mb_strlen($match[0]) : mb_strlen($sql);
+            return [mb_substr($sql, 0, $length), mb_substr($sql, $length)];
+        };
+
+        $tokens = [];
+        while (!empty($sql)) {
+            $identifierPos = mb_strpos($sql, '`');
+            $literalSinglequotePos = mb_strpos($sql, '\'');
+            $literalDoublequotePos = mb_strpos($sql, '"');
+            $firstPos = $identifierPos !== false ? $identifierPos : null;
+            $firstPos = $literalSinglequotePos !== false ? ($firstPos === null ? $literalSinglequotePos : min($literalSinglequotePos,
+                $firstPos)) : $firstPos;
+            $firstPos = $literalDoublequotePos !== false ? ($firstPos === null ? $literalDoublequotePos : min($literalDoublequotePos,
+                $firstPos)) : $firstPos;
+
+            if ($firstPos !== null) {
+                $tokens[] = [
+                    'context' => 'raw',
+                    'sql' => mb_substr($sql, 0, $firstPos)
+                ];
+                $sql = mb_substr($sql, $firstPos);
+            }
+
+            if ($identifierPos === $firstPos) {
+                list($identifier, $sql) = $shiftIdentifier($sql);
+                $tokens[] = [
+                    'context' => 'identifier',
+                    'sql' => $identifier
+                ];
+            } elseif ($literalSinglequotePos === $firstPos) {
+                list($literal, $sql) = $shiftLiteralSinglequote($sql);
+                $tokens[] = [
+                    'context' => 'literal',
+                    'sql' => $literal
+                ];
+            } elseif ($literalDoublequotePos === $firstPos) {
+                list($literal, $sql) = $shiftLiteralDoublequote($sql);
+                $tokens[] = [
+                    'context' => 'literal',
+                    'sql' => $literal
+                ];
+            } else {
+                $tokens[] = [
+                    'context' => 'raw',
+                    'sql' => $sql
+                ];
+                $sql = '';
+            }
+        }
+
+        foreach ($tokens as $key => $token) {
+            if ($token['context'] === 'raw') {
+                while (!empty($bindings) && ($pos = mb_strpos($tokens[$key]['sql'], '?')) !== false) {
+                    $tokens[$key]['sql'] = mb_substr($tokens[$key]['sql'], 0,
+                            $pos) . self::wrapData(array_shift($bindings)) . mb_substr($tokens[$key]['sql'],
+                            $pos + mb_strlen('?'));
+                }
+            }
+        }
+
+        $sql = implode('', array_map(function ($token) {
+            return $token['sql'];
+        }, $tokens));
+
+        return $sql;
     }
 
 }

@@ -4,8 +4,10 @@ namespace Mpociot\Couchbase\Query;
 
 use Couchbase\Exception;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Mpociot\Couchbase\Connection;
@@ -148,14 +150,25 @@ class Builder extends BaseBuilder
     /**
      * Create a new query builder instance.
      *
-     * @param Connection $connection
-     * @param Processor $processor
+     * @param  ConnectionInterface $connection
+     * @param  BaseGrammar $grammar
+     * @param  Processor $processor
+     * @throws \Exception
+     * @return void
      */
-    public function __construct(Connection $connection, Processor $processor)
-    {
-        $this->grammar = new Grammar($connection->hasInlineParameters());
-        $this->connection = $connection;
-        $this->processor = $processor;
+    public function __construct(
+        ConnectionInterface $connection,
+        BaseGrammar $grammar = null,
+        Processor $processor = null
+    ) {
+        if(!($connection instanceof Connection)) {
+            throw new \Exception('Argument 1 passed to '.get_class($this).'::__construct() must be an instance of '.Connection::class.', instance of '.get_class($connection).' given.');
+        }
+        if(!($grammar === null || $grammar instanceof Grammar)) {
+            throw new \Exception('Argument 2 passed to '.get_class($this).'::__construct() must be an instance of '.Grammar::class.', instance of '.get_class($grammar).' given.');
+        }
+
+        parent::__construct($connection, $grammar, $processor);
         $this->useCollections = $this->shouldUseCollections();
         $this->returning([$this->connection->getBucketName() . '.*']);
     }
@@ -422,9 +435,6 @@ class Builder extends BaseBuilder
      */
     public function setBindings(array $bindings, $type = 'where')
     {
-        if ($this->getConnection()->hasInlineParameters()) {
-            return $this;
-        }
         return parent::setBindings($bindings, $type);
     }
 
@@ -439,9 +449,6 @@ class Builder extends BaseBuilder
      */
     public function addBinding($value, $type = 'where')
     {
-        if ($this->getConnection()->hasInlineParameters()) {
-            return $this;
-        }
         return parent::addBinding($value, $type);
     }
 
@@ -537,7 +544,7 @@ class Builder extends BaseBuilder
      *
      * @param  string $column
      * @param  string|null $key
-     * @return array
+     * @return \Illuminate\Support\Collection
      */
     public function pluck($column, $key = null)
     {
@@ -680,7 +687,16 @@ class Builder extends BaseBuilder
         }
 
         $query = $this->getGrammar()->compileUnset($this, $columns);
-        return $this->connection->update($query, $this->getBindings());
+        $bindings = $this->getBindings();
+        return $this->connection->update($query, $bindings);
+    }
+
+    /**
+     * @return Grammar
+     */
+    public function getGrammar() : Grammar
+    {
+        return parent::getGrammar();
     }
 
     /**
@@ -690,7 +706,7 @@ class Builder extends BaseBuilder
      */
     public function newQuery()
     {
-        return new Builder($this->connection, $this->processor);
+        return new Builder($this->connection, $this->grammar, $this->processor);
     }
 
     /**
@@ -753,6 +769,23 @@ class Builder extends BaseBuilder
             $column = $this->grammar->getMetaIdExpression($this);
         }
         return parent::where($column, $operator, $value, $boolean);
+    }
+
+    /**
+     * Add a raw where clause to the query.
+     *
+     * @param  string  $sql
+     * @param  mixed   $bindings
+     * @param  string  $boolean
+     * @return $this
+     */
+    public function whereRaw($sql, $bindings = [], $boolean = 'and')
+    {
+        $this->wheres[] = ['type' => 'raw', 'sql' => $sql, 'boolean' => $boolean, 'bindings' => $bindings];
+
+        $this->addBinding((array) $bindings, 'where');
+
+        return $this;
     }
 
     /**
