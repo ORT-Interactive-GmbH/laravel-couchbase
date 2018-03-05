@@ -2,10 +2,12 @@
 
 namespace Mpociot\Couchbase;
 
+use Couchbase\N1qlQuery;
 use CouchbaseBucket;
 use CouchbaseCluster;
-use CouchbaseN1qlQuery;
+use Mpociot\Couchbase\Events\QueryFired;
 use Mpociot\Couchbase\Query\Builder as QueryBuilder;
+use Mpociot\Couchbase\Query\Grammar as QueryGrammar;
 
 class Connection extends \Illuminate\Database\Connection
 {
@@ -24,7 +26,7 @@ class Connection extends \Illuminate\Database\Connection
     protected $metrics;
 
     /** @var int  default consistency */
-    protected $consistency = \CouchbaseN1qlQuery::REQUEST_PLUS;
+    protected $consistency = N1qlQuery::REQUEST_PLUS;
 
     /**
      * The Couchbase connection handler.
@@ -73,14 +75,27 @@ class Connection extends \Illuminate\Database\Connection
         // Select database
         $this->bucketname = $config['bucket'];
         $this->bucket = $this->connection->openBucket($this->bucketname);
-
         $this->inlineParameters = isset($config['inline_parameters']) ? (bool)$config['inline_parameters'] : false;
 
         $this->useDefaultQueryGrammar();
-
         $this->useDefaultPostProcessor();
-
         $this->useDefaultSchemaGrammar();
+    }
+
+    /**
+     * @param bool $inlineParameters
+     */
+    public function setInlineParameters(bool $inlineParameters)
+    {
+        $this->inlineParameters = $inlineParameters;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasInlineParameters() : bool
+    {
+        return $this->inlineParameters;
     }
 
     /**
@@ -104,16 +119,14 @@ class Connection extends \Illuminate\Database\Connection
     }
 
     /**
-     * Begin a fluent query against a set of docuemnt types.
+     * Begin a fluent query against a set of document types.
      *
      * @param  string $type
      * @return Query\Builder
      */
     public function builder($type)
     {
-        $processor = $this->getPostProcessor();
-
-        $query = new QueryBuilder($this, $processor);
+        $query = new QueryBuilder($this, $this->getQueryGrammar(), $this->getPostProcessor());
 
         return $query->from($type);
     }
@@ -135,29 +148,28 @@ class Connection extends \Illuminate\Database\Connection
      *
      * @param  string $query
      * @param  array $bindings
-     * @return mixed
+     * @return bool
+     * @throws \Exception
      */
     public function statement($query, $bindings = [])
     {
         return $this->run($query, $bindings, function ($query, $bindings) {
             if ($this->pretending()) {
-                return [];
+                return true;
             }
 
-            $query = CouchbaseN1qlQuery::fromString($query);
-            $query->consistency($this->consistency);
-            $query->positionalParams($bindings);
+            $result = $this->runN1qlQuery($query, $bindings);
 
-            return $this->executeQuery($query);
+            return $result->status === 'success';
         });
     }
 
     /**
-     * @param CouchbaseN1qlQuery $query
+     * @param N1qlQuery $query
      *
      * @return mixed
      */
-    protected function executeQuery(CouchbaseN1qlQuery $query)
+    protected function executeQuery(N1qlQuery $query)
     {
         return $this->bucket->query($query);
     }
@@ -167,22 +179,7 @@ class Connection extends \Illuminate\Database\Connection
      */
     public function select($query, $bindings = [], $useReadPdo = true)
     {
-        return $this->run($query, $bindings, function ($query, $bindings) {
-            if ($this->pretending()) {
-                return [];
-            }
-
-            $query = CouchbaseN1qlQuery::fromString($query);
-            $query->consistency($this->consistency);
-            $query->positionalParams($bindings);
-
-            $result = $this->executeQuery($query);
-            $rows = [];
-            if (isset($result->rows)) {
-                $rows = json_decode(json_encode($result->rows), true);
-            }
-            return $rows;
-        });
+        return $this->selectWithMeta($query, $bindings, $useReadPdo)->rows;
     }
 
     /**
@@ -195,11 +192,7 @@ class Connection extends \Illuminate\Database\Connection
                 return [];
             }
 
-            $query = CouchbaseN1qlQuery::fromString($query);
-            $query->consistency($this->consistency);
-            $query->positionalParams($bindings);
-
-            $result = $this->executeQuery($query);
+            $result = $this->runN1qlQuery($query, $bindings);
             if (isset($result->rows)) {
                 $result->rows = json_decode(json_encode($result->rows), true);
             }
@@ -212,10 +205,11 @@ class Connection extends \Illuminate\Database\Connection
      * @param array $bindings
      *
      * @return int|mixed
+     * @throws \Exception
      */
     public function insert($query, $bindings = [])
     {
-        return $this->positionalStatement($query, $bindings);
+        return $this->statement($query, $bindings);
     }
 
     /**
@@ -225,10 +219,11 @@ class Connection extends \Illuminate\Database\Connection
      * @param array $bindings
      *
      * @return int|\stdClass
+     * @throws \Exception
      */
     public function update($query, $bindings = [])
     {
-        return $this->positionalStatement($query, $bindings);
+        return $this->affectingStatement($query, $bindings);
     }
 
     /**
@@ -238,29 +233,11 @@ class Connection extends \Illuminate\Database\Connection
      * @param array $bindings
      *
      * @return int|\stdClass
+     * @throws \Exception
      */
     public function delete($query, $bindings = [])
     {
-        return $this->positionalStatement($query, $bindings);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function affectingStatement($query, $bindings = [])
-    {
-        return $this->run($query, $bindings, function ($query, $bindings) {
-            if ($this->pretending()) {
-                return 0;
-            }
-            $query = \CouchbaseN1qlQuery::fromString($query);
-            $query->consistency($this->consistency);
-            $query->namedParams(['parameters' => $bindings]);
-            $result = $this->executeQuery($query);
-            $this->metrics = (isset($result->metrics)) ? $result->metrics : [];
-
-            return (isset($result->rows[0])) ? $result->rows[0] : false;
-        });
+        return $this->affectingStatement($query, $bindings);
     }
 
     /**
@@ -268,21 +245,52 @@ class Connection extends \Illuminate\Database\Connection
      * @param array $bindings
      *
      * @return mixed
+     * @throws \Exception
      */
-    public function positionalStatement($query, array $bindings = [])
+    public function affectingStatement($query, $bindings = [])
     {
         return $this->run($query, $bindings, function ($query, $bindings) {
             if ($this->pretending()) {
                 return 0;
             }
-            $query = CouchbaseN1qlQuery::fromString($query);
-            $query->consistency($this->consistency);
-            $query->positionalParams($bindings);
-            $result = $this->executeQuery($query);
+            $result = $this->runN1qlQuery($query, $bindings);
             $this->metrics = (isset($result->metrics)) ? $result->metrics : [];
 
             return (isset($result->rows[0])) ? $result->rows[0] : false;
         });
+    }
+
+    /**
+     * @param string $n1ql
+     * @param array $bindings
+     * @return mixed
+     */
+    protected function runN1qlQuery(string $n1ql, array $bindings) {
+        if($this->hasInlineParameters()) {
+            $n1ql = $this->getQueryGrammar()->applyBindings($n1ql, $bindings);
+            $bindings = [];
+        }
+
+        $query = N1qlQuery::fromString($n1ql);
+        $query->consistency($this->consistency);
+        $query->positionalParams($bindings);
+        // TODO $query->namedParams(['parameters' => $bindings]);
+
+        $result = $this->executeQuery($query);
+        $this->logQueryFired($n1ql, [
+            'consistency' => $this->consistency,
+            'positionalParams' => $bindings
+        ]);
+        return $result;
+    }
+
+    /**
+     * @param string $query
+     * @param array $options
+     */
+    public function logQueryFired(string $query, array $options)
+    {
+        $this->event(new QueryFired($query, $options));
     }
 
     /**
@@ -328,11 +336,13 @@ class Connection extends \Illuminate\Database\Connection
     }
 
     /**
-     * @return boolean
+     * Get the query grammar used by the connection.
+     *
+     * @return QueryGrammar
      */
-    public function hasInlineParameters()
+    public function getQueryGrammar() : QueryGrammar
     {
-        return $this->inlineParameters;
+        return $this->queryGrammar;
     }
 
     /**
@@ -436,7 +446,7 @@ class Connection extends \Illuminate\Database\Connection
      */
     protected function getDefaultQueryGrammar()
     {
-        return new Query\Grammar($this->hasInlineParameters());
+        return new Query\Grammar();
     }
 
     /**

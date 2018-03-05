@@ -422,13 +422,15 @@ abstract class Model extends BaseModel
     /**
      * Get a new query builder instance for the connection.
      *
-     * @return Builder
+     * @return QueryBuilder
      */
     protected function newBaseQueryBuilder()
     {
         $connection = $this->getConnection();
 
-        return new QueryBuilder($connection, $connection->getPostProcessor());
+        return new QueryBuilder(
+            $connection, $connection->getQueryGrammar(), $connection->getPostProcessor()
+        );
     }
 
     /**
