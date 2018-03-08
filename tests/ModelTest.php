@@ -452,4 +452,29 @@ class ModelTest extends TestCase
 
         $this->assertEquals('Strasbourg', $user['address.city']);
     }
+
+    public function testModelExists()
+    {
+        $user = new User();
+        $this->assertFalse($user->exists);
+        $user->save();
+        $this->assertTrue($user->exists);
+        $user->delete();
+        $this->assertFalse($user->exists);
+    }
+
+    public function testModelExistsWithOtherExisting()
+    {
+        User::create([
+            'name' => 'John Doe'
+        ]);
+
+        $user = new User();
+        $this->assertFalse($user->exists);
+        $user->save();
+        $this->assertTrue($user->exists);
+        $user->delete();
+        $this->assertFalse($user->exists);
+    }
+
 }

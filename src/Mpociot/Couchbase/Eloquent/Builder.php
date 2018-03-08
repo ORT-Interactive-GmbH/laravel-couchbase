@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pagination\Paginator;
 use Mpociot\Couchbase\Query\Builder as QueryBuilder;
+use Illuminate\Database\Query\Builder as BaseQueryBuilder;
 
 class Builder extends EloquentBuilder
 {
@@ -31,6 +32,21 @@ class Builder extends EloquentBuilder
         'push',
         'pull',
     ];
+
+    /**
+     * Create a new Eloquent query builder instance.
+     *
+     * @param  BaseQueryBuilder $query
+     * @throws \Exception
+     * @return void
+     */
+    public function __construct(BaseQueryBuilder $query)
+    {
+        if(!($query instanceof QueryBuilder)) {
+            throw new \Exception('Argument 1 passed to '.get_class($this).'::__construct() must be an instance of '.QueryBuilder::class.', instance of '.get_class($query).' given.');
+        }
+        parent::__construct($query);
+    }
 
     /**
      * Update a record in the database.

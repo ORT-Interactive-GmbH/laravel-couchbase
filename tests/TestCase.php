@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+use Mpociot\Couchbase\Events\QueryFired;
+
 class TestCase extends Orchestra\Testbench\TestCase
 {
 
@@ -53,9 +55,49 @@ class TestCase extends Orchestra\Testbench\TestCase
             file_put_contents(__DIR__ . '/../sql-log.sql', '-- ' . json_encode($sql->bindings) . "\n", FILE_APPEND);
             $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 12);
             $backtrace = array_slice($backtrace, 5);
-            file_put_contents(__DIR__ . '/../sql-log.sql', '-- ' . implode("\n-- ", array_map(function($trace){
-                return ($trace['class']??'').($trace['type']??'').($trace['function']??'').'() called at ['.($trace['file']??'').':'.($trace['line']??'').']';
+            file_put_contents(__DIR__ . '/../sql-log.sql', '-- ' . implode("\n-- ", array_map(function ($trace) {
+                    return ($trace['class'] ?? '') . ($trace['type'] ?? '') . ($trace['function'] ?? '') . '() called at [' . ($trace['file'] ?? '') . ':' . ($trace['line'] ?? '') . ']';
                 }, $backtrace)) . "\n\n", FILE_APPEND);
+        });
+    }
+
+    protected function assertEventListenFirst($event, $callback)
+    {
+        $fired = false;
+        $firedEvent = null;
+
+        Event::listen($event, function ($event) use ($callback, &$fired, &$firedEvent) {
+            if ($fired) {
+                return;
+            }
+
+            $firedEvent = $event;
+
+            $fired = true;
+        });
+
+        $callback();
+
+        $this->assertTrue($fired);
+
+        return $firedEvent;
+    }
+
+    protected function assertQueryFiredEquals($n1ql, $bindings, $callback)
+    {
+        /** @var QueryFired $event */
+        $event = $this->assertEventListenFirst(QueryFired::class, $callback);
+
+        $this->assertEquals($n1ql, $event->getQuery());
+        if ($bindings !== null) {
+            $this->assertEquals($bindings, $event->getPositionalParams());
+        }
+    }
+
+    protected function assertSelectSqlEquals($queryBuilder, $n1ql, $bindings = null)
+    {
+        $this->assertQueryFiredEquals($n1ql, $bindings, function () use ($queryBuilder) {
+            $queryBuilder->get();
         });
     }
 
