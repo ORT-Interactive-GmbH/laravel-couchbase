@@ -136,11 +136,7 @@ class Connection extends \Illuminate\Database\Connection
      */
     public function query()
     {
-        $processor = $this->getPostProcessor();
-
-        $query = new QueryBuilder($this, $processor);
-
-        return $query->from(null);
+        return $this->builder(null);
     }
 
     /**
