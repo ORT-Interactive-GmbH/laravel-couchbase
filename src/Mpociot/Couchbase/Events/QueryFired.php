@@ -39,4 +39,8 @@ class QueryFired
     public function getConsistency() {
         return isset($this->options['consistency']) ? $this->options['consistency'] : [];
     }
+
+    public function isSuccessful() {
+        return isset($this->options['isSuccessful']) && $this->options['isSuccessful'];
+    }
 }

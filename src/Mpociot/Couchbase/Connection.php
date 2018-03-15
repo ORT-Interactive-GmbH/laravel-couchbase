@@ -272,11 +272,17 @@ class Connection extends \Illuminate\Database\Connection
         $query->positionalParams($bindings);
         // TODO $query->namedParams(['parameters' => $bindings]);
 
-        $result = $this->executeQuery($query);
-        $this->logQueryFired($n1ql, [
-            'consistency' => $this->consistency,
-            'positionalParams' => $bindings
-        ]);
+        $isSuccessFul = false;
+        try {
+            $result = $this->executeQuery($query);
+            $isSuccessFul = true;
+        } finally {
+            $this->logQueryFired($n1ql, [
+                'consistency' => $this->consistency,
+                'positionalParams' => $bindings,
+                'isSuccessful' => $isSuccessFul
+            ]);
+        }
         return $result;
     }
 
