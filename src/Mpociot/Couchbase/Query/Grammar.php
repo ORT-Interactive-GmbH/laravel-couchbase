@@ -513,11 +513,13 @@ class Grammar extends BaseGrammar
 
         foreach ($tokens as $key => $token) {
             if ($token['context'] === 'raw') {
-                while (!empty($bindings) && ($pos = mb_strpos($tokens[$key]['sql'], '?')) !== false) {
-                    $tokens[$key]['sql'] = mb_substr($tokens[$key]['sql'], 0,
-                            $pos) . self::wrapData(array_shift($bindings)) . mb_substr($tokens[$key]['sql'],
-                            $pos + mb_strlen('?'));
+                $tokenSqls = explode('?', $token['sql']);
+                $tokenSql = $tokenSqls[0];
+                for($i = 1; $i < count($tokenSqls); $i++) {
+                    $data = empty($bindings) ? '?' : self::wrapData(array_shift($bindings));
+                    $tokenSql .= $data.$tokenSqls[$i];
                 }
+                $tokens[$key]['sql'] = $tokenSql;
             }
         }
 
