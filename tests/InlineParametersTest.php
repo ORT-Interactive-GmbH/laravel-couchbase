@@ -188,26 +188,51 @@ class InlineParametersTest extends TestCase
     /**
      * @group InlineParametersTest
      */
-    public function testApplyBindingsLiteralJson()
+    public function testApplyBindingsLiteralJsonString()
     {
         $this->assertEquals(0, $this->getActualBindingsCount('select "?"'));
         $this->assertEquals(1, $this->getActualBindingsCount('select "?", ?'));
         $this->assertEquals(3, $this->getActualBindingsCount('select "?", ?, "?", ?, "?", ?'));
 
-        $this->assertEquals(json_encode('?') . ' "l"',
-            DB::getQueryGrammar()->applyBindings(json_encode('?') . ' ?', ['l']));
-        $this->assertEquals(json_encode('?`?') . ' "m"',
-            DB::getQueryGrammar()->applyBindings(json_encode('?`?') . ' ?', ['m']));
-        $this->assertEquals(json_encode('?\'?') . ' "n"',
-            DB::getQueryGrammar()->applyBindings(json_encode('?\'?') . ' ?', ['n']));
-        $this->assertEquals(json_encode('?"?') . ' "o"',
-            DB::getQueryGrammar()->applyBindings(json_encode('?"?') . ' ?', ['o']));
-        $this->assertEquals(json_encode('?"\'`?') . ' "p"',
-            DB::getQueryGrammar()->applyBindings(json_encode('?"\'`?') . ' ?', ['p']));
-        $this->assertEquals(json_encode('?\"?') . '"q" "" ?',
-            DB::getQueryGrammar()->applyBindings(json_encode('?\"?') . '? "" ?', ['q']));
-        $this->assertEquals(json_encode('?\\') . '"r" "" ?',
-            DB::getQueryGrammar()->applyBindings(json_encode('?\\') . '? "" ?', ['r']));
+        $this->assertEquals(json_encode('?') . ' "?l" "l2" ?',
+            DB::getQueryGrammar()->applyBindings(json_encode('?') . ' ? ? ?', ['?l', 'l2']));
+        $this->assertEquals(json_encode('?`?') . ' "?m" "m2" ?',
+            DB::getQueryGrammar()->applyBindings(json_encode('?`?') . ' ? ? ?', ['?m', 'm2']));
+        $this->assertEquals(json_encode('?\'?') . ' "?n" "n2" ?',
+            DB::getQueryGrammar()->applyBindings(json_encode('?\'?') . ' ? ? ?', ['?n', 'n2']));
+        $this->assertEquals(json_encode('?"?') . ' "?o" "o2" ?',
+            DB::getQueryGrammar()->applyBindings(json_encode('?"?') . ' ? ? ?', ['?o', 'o2']));
+        $this->assertEquals(json_encode('?"\'`?') . ' "?p" "p2" ?',
+            DB::getQueryGrammar()->applyBindings(json_encode('?"\'`?') . ' ? ? ?', ['?p', 'p2']));
+        $this->assertEquals(json_encode('?\"?') . '"?q" "" "q2" ? ?',
+            DB::getQueryGrammar()->applyBindings(json_encode('?\"?') . '? "" ? ? ?', ['?q', 'q2']));
+        $this->assertEquals(json_encode('?\\') . '"?r" "" "r2" ? ?',
+            DB::getQueryGrammar()->applyBindings(json_encode('?\\') . '? "" ? ? ?', ['?r', 'r2']));
+    }
+
+    /**
+     * @group InlineParametersTest
+     */
+    public function testApplyBindingsLiteralJson()
+    {
+        $this->assertEquals(0, $this->getActualBindingsCount('select '.json_encode(['?' => '?']).''));
+        $this->assertEquals(1, $this->getActualBindingsCount('select '.json_encode(['?' => '?']).', ?'));
+        $this->assertEquals(3, $this->getActualBindingsCount('select '.json_encode(['?' => '?']).', ?, '.json_encode(['?' => '?']).', ?, '.json_encode(['?' => '?']).', ?'));
+
+        $this->assertEquals(json_encode(['?' => '?']) . ' "?l" "l2" ?',
+            DB::getQueryGrammar()->applyBindings(json_encode(['?' => '?']) . ' ? ? ?', ['?l', 'l2']));
+        $this->assertEquals(json_encode(['?' => '?`?']) . ' "?m" "m2" ?',
+            DB::getQueryGrammar()->applyBindings(json_encode(['?' => '?`?']) . ' ? ? ?', ['?m', 'm2']));
+        $this->assertEquals(json_encode(['?' => '?\'?']) . ' "?n" "n2" ?',
+            DB::getQueryGrammar()->applyBindings(json_encode(['?' => '?\'?']) . ' ? ? ?', ['?n', 'n2']));
+        $this->assertEquals(json_encode(['?' => '?"?']) . ' "?o" "o2" ?',
+            DB::getQueryGrammar()->applyBindings(json_encode(['?' => '?"?']) . ' ? ? ?', ['?o', 'o2']));
+        $this->assertEquals(json_encode(['?' => '?"\'`?']) . ' "?p" "p2" ?',
+            DB::getQueryGrammar()->applyBindings(json_encode(['?' => '?"\'`?']) . ' ? ? ?', ['?p', 'p2']));
+        $this->assertEquals(json_encode(['?' => '?\"?']) . '"?q" "" "q2" ? ?',
+            DB::getQueryGrammar()->applyBindings(json_encode(['?' => '?\"?']) . '? "" ? ? ?', ['?q', 'q2']));
+        $this->assertEquals(json_encode(['?' => '?\\']) . '"?r" "" "r2" ? ?',
+            DB::getQueryGrammar()->applyBindings(json_encode(['?' => '?\\']) . '? "" ? ? ?', ['?r', 'r2']));
     }
 
     /**
