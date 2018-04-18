@@ -48,7 +48,7 @@ before_script:
 test_php7.0_cb4.5:
   variables:
     CB_DATABASE: "test-ing-cb4.5"
-    CB_VERSION: 4.5
+    CB_VERSION: "4.5"
   image: php:7.0
   script:
   # run laravel tests
@@ -57,7 +57,7 @@ test_php7.0_cb4.5:
 test_php7.0_cb4.6:
   variables:
     CB_DATABASE: "test-ing-cb4.6"
-    CB_VERSION: 4.6
+    CB_VERSION: "4.6"
   image: php:7.0
   script:
   # run laravel tests
@@ -66,7 +66,7 @@ test_php7.0_cb4.6:
 test_php7.1_cb4.6:
   variables:
     CB_DATABASE: "test-ing-cb4.6"
-    CB_VERSION: 4.6
+    CB_VERSION: "4.6"
   image: php:7.1
   script:
   # run laravel tests
@@ -75,7 +75,7 @@ test_php7.1_cb4.6:
 test_php7.1_cb5.0:
   variables:
     CB_DATABASE: "test-ing-cb5.0"
-    CB_VERSION: 5.0
+    CB_VERSION: "5.0"
   image: php:7.1
   script:
   # run laravel tests
@@ -84,7 +84,7 @@ test_php7.1_cb5.0:
 test_php7.1_cb5.1:
   variables:
     CB_DATABASE: "test-ing-cb5.1"
-    CB_VERSION: 5.1
+    CB_VERSION: "5.1"
   image: php:7.1
   script:
   # run laravel tests
