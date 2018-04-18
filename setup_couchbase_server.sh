@@ -8,8 +8,13 @@ if [[ $CB_VERSION == 5* ]]; then
     apt-get install python-httplib2 -yqq
 
     # Couchbase Server
-    wget https://packages.couchbase.com/releases/5.0.1/couchbase-server-enterprise_5.0.1-debian8_amd64.deb
-    dpkg -i couchbase-server-enterprise_5.0.1-debian8_amd64.deb
+    if [[ $CB_VERSION == 5.0* ]]; then
+        wget https://packages.couchbase.com/releases/5.0.1/couchbase-server-enterprise_5.0.1-debian8_amd64.deb
+        dpkg -i couchbase-server-enterprise_5.0.1-debian8_amd64.deb
+    else
+        wget https://packages.couchbase.com/releases/5.1.0/couchbase-server-enterprise_5.1.0-debian8_amd64.deb
+        dpkg -i couchbase-server-enterprise_5.1.0-debian8_amd64.deb
+    fi
 
     # Bucket init
     /opt/couchbase/bin/couchbase-server -- -noinput -detached
@@ -26,10 +31,15 @@ if [[ $CB_VERSION == 5* ]]; then
     /opt/couchbase/bin/couchbase-cli user-manage -c 127.0.0.1:8091 -u Administrator -p password --set --rbac-username dbuser_backend --rbac-password password_backend --roles bucket_full_access[$CB_DATABASE] --auth-domain external
 
     /opt/couchbase/bin/cbq -e 127.0.0.1:8093 -u Administrator -p password --script "CREATE PRIMARY INDEX ON \`$CB_DATABASE\` USING GSI;"
-else
+elif [[ $CB_VERSION == 4* ]]; then
     # Couchbase Server
-    wget https://packages.couchbase.com/releases/4.6.0-DP/couchbase-server-enterprise_4.6.0-DP-ubuntu12.04_amd64.deb
-    dpkg -i couchbase-server-enterprise_4.6.0-DP-ubuntu12.04_amd64.deb
+    if [[ $CB_VERSION == 4.5* ]]; then
+        wget https://packages.couchbase.com/releases/4.5.1/couchbase-server-enterprise_4.5.1-ubuntu12.04_amd64.deb
+        dpkg -i couchbase-server-enterprise_4.5.1-ubuntu12.04_amd64.deb
+    else
+        wget https://packages.couchbase.com/releases/4.6.4/couchbase-server-enterprise_4.6.4-ubuntu12.04_amd64.deb
+        dpkg -i couchbase-server-enterprise_4.6.4-ubuntu12.04_amd64.deb
+    fi
 
     # Bucket init
     /opt/couchbase/bin/couchbase-server -- -noinput -detached
@@ -40,4 +50,7 @@ else
     sleep 10
 
     /opt/couchbase/bin/cbq -e http://127.0.0.1:8091 --script "CREATE PRIMARY INDEX ON \`$CB_DATABASE\` USING GSI;"
+else
+    echo "unknown couchbase version"
+    exit 1
 fi
