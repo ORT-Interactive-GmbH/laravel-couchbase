@@ -19,7 +19,7 @@ before_script:
   - apt-get install wget -yqq
 
   # Install dependencies
-  - apt-get install git libxml2-dev libexpat1-dev libbz2-dev libgmp3-dev libldap2-dev unixodbc-dev libpq-dev libsqlite3-dev libaspell-dev libsnmp-dev libpcre3-dev libtidy-dev -yqq
+  - apt-get install git libxml2-dev libexpat1-dev libbz2-dev libgmp3-dev libldap2-dev unixodbc-dev libpq-dev libsqlite3-dev libaspell-dev libsnmp-dev libpcre3-dev libtidy-dev bison -yqq
   - apt-get install lsb-release -yqq #libmcrypt-dev libcurl4-openssl-dev
 
   # Couchbase PHP SDK
