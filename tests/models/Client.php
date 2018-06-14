@@ -4,6 +4,7 @@ use Mpociot\Couchbase\Eloquent\Model as Eloquent;
 
 class Client extends Eloquent
 {
+    protected $connection = 'couchbase-not-default';
     protected $table = 'clients';
     protected static $unguarded = true;
 

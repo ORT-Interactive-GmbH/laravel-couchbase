@@ -45,14 +45,14 @@ before_script:
   - php composer.phar install --prefer-dist --no-interaction
 
 
-test_php7.0_cb4.5:
-  variables:
-    CB_DATABASE: "test-ing-cb45"
-    CB_VERSION: "4.5"
-  image: php:7.0
-  script:
-  # run laravel tests
-  - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+#test_php7.0_cb4.5:
+#  variables:
+#    CB_DATABASE: "test-ing-cb45"
+#    CB_VERSION: "4.5"
+#  image: php:7.0
+#  script:
+#  # run laravel tests
+#  - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
 
 test_php7.0_cb4.6:
   variables:

@@ -7,7 +7,8 @@ class InlineParametersTest extends TestCase
 {
     public static function setUpBeforeClass()
     {
-        putenv('CB_INLINE_PARAMETERS=true');
+        putenv('CB_INLINE_PARAMETERS=false');
+        putenv('CB_INLINE_PARAMETERS_DEFAULT_BUCKET=true');
         parent::setUpBeforeClass();
     }
 
@@ -19,7 +20,10 @@ class InlineParametersTest extends TestCase
         /** @var \Mpociot\Couchbase\Query\Builder $query */
         $query = DB::table('table6')->select();
 
-        $this->assertEquals(true, config('database.connections.couchbase.inline_parameters'));
+        $this->assertEquals(false, config('database.connections.couchbase-not-default.inline_parameters'));
+        $this->assertEquals(false, DB::connection('couchbase-not-default')->hasInlineParameters());
+
+        $this->assertEquals(true, config('database.connections.couchbase-default.inline_parameters'));
         $this->assertEquals(true, DB::hasInlineParameters());
 
         $this->assertSelectSqlEquals($query,

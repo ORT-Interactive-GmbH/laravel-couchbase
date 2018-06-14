@@ -7,8 +7,8 @@ class UserTableSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('users')->delete();
+        DB::connection('couchbase-not-default')->table('users')->delete();
 
-        DB::table('users')->insert(['name' => 'John Doe', 'seed' => true]);
+        DB::connection('couchbase-not-default')->table('users')->insert(['name' => 'John Doe', 'seed' => true]);
     }
 }
