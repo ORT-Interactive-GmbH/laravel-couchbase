@@ -74,7 +74,7 @@ class Connection extends \Illuminate\Database\Connection
 
         // Select database
         $this->bucketname = $config['bucket'];
-        $this->bucket = $this->connection->openBucket($this->bucketname, $config['password']);
+        $this->bucket = $this->connection->openBucket($this->bucketname);
         $this->inlineParameters = isset($config['inline_parameters']) ? (bool)$config['inline_parameters'] : false;
 
         $this->useDefaultQueryGrammar();
@@ -368,8 +368,10 @@ class Connection extends \Illuminate\Database\Connection
     {
         if(is_array($config['host'])){
             $cluster = new CouchbaseCluster(implode(', ', $config['host']));
+        }else{
+            $cluster = new CouchbaseCluster($config['host']);
         }
-        $cluster = new CouchbaseCluster($config['host']);
+
         if (!empty($config['username']) && !empty($config['password'])) {
             if (!method_exists($cluster, 'authenticateAs')) {
                 throw new \RuntimeException('The couchbase php sdk does not support password authentication below version 2.4.0.');
