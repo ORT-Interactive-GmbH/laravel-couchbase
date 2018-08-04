@@ -1,8 +1,8 @@
 {
-    "name": "ort-interactive-gmbh/laravel-couchbase",
+    "name": "pedmindset/laravel-couchbase",
     "description": "A Couchbase based Eloquent model and Query builder for Laravel",
     "keywords": ["laravel","eloquent","couchbase","database","model"],
-    "homepage": "https://github.com/ORT-Interactive-GmbH/laravel-couchbase",
+    "homepage": "https://github.com/pedmindset/laravel-couchbase",
     "authors": [
     ],
     "license" : "MIT",
