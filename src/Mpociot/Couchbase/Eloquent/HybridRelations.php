@@ -45,7 +45,7 @@ trait HybridRelations
      * @param  string $localKey
      * @return \Illuminate\Database\Eloquent\Relations\MorphOne
      */
-    public function morphOne($related, $name, $type = null, $id = null, $localKey = null)
+    public function morphOne($related, $name, $type = null, $id = null, $localKey = null, $ownerKey = NULL)
     {
         // Check if it is a relation with an original model.
         if (!is_subclass_of($related, 'Mpociot\Couchbase\Eloquent\Model')) {
@@ -170,7 +170,7 @@ trait HybridRelations
      * @param  string $id
      * @return \Illuminate\Database\Eloquent\Relations\MorphTo
      */
-    public function morphTo($name = null, $type = null, $id = null)
+    public function morphTo($name = null, $type = null, $id = null, $ownerKey = NULL)
     {
         // If no name is provided, we will use the backtrace to get the function name
         // since that is most likely the name of the polymorphic interface. We can
@@ -216,41 +216,70 @@ trait HybridRelations
      * @param  string $relation
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function belongsToMany($related, $collection = null, $foreignKey = null, $otherKey = null, $relation = null)
-    {
+    public function belongsToMany(
+        $related,
+        $collection = null,
+        $foreignKey = null,
+        $otherKey = null,
+        $parentKey = null,
+        $relatedKey = null,
+        $relation = null
+    ) {
         // If no relationship name was passed, we will pull backtraces to get the
         // name of the calling function. We will use that function name as the
         // title of this relation since that is a great convention to apply.
         if (is_null($relation)) {
             $relation = $this->guessBelongsToManyRelation();
         }
-
         // Check if it is a relation with an original model.
         if (!is_subclass_of($related, \Mpociot\Couchbase\Eloquent\Model::class)) {
-            return parent::belongsToMany($related, $collection, $foreignKey, $otherKey, $relation);
+            return parent::belongsToMany(
+                $related,
+                $collection,
+                $foreignKey,
+                $otherKey,
+                $parentKey,
+                $relatedKey,
+                $relation
+            );
         }
-
         // First, we'll need to determine the foreign key and "other key" for the
         // relationship. Once we have determined the keys we'll make the query
         // instances as well as the relationship instances we need for this.
         $foreignKey = $foreignKey ?: $this->getForeignKey() . 's';
-
         $instance = new $related;
-
         $otherKey = $otherKey ?: $instance->getForeignKey() . 's';
-
         // If no table name was provided, we can guess it by concatenating the two
         // models using underscores in alphabetical order. The two model names
         // are transformed to snake case from their default CamelCase also.
         if (is_null($collection)) {
             $collection = $instance->getTable();
         }
-
         // Now we're ready to create a new query builder for the related model and
         // the relationship instances for the relation. The relations will set
         // appropriate query constraint and entirely manages the hydrations.
         $query = $instance->newQuery();
-
-        return new BelongsToMany($query, $this, $collection, $foreignKey, $otherKey, $relation);
+        return new BelongsToMany(
+            $query,
+            $this,
+            $collection,
+            $foreignKey,
+            $otherKey,
+            $parentKey ?: $this->getKeyName(),
+            $relatedKey ?: $instance->getKeyName(),
+            $relation
+        );
+    }
+    /**
+     * Get the relationship name of the belongs to many.
+     *
+     * @return string
+     */
+    protected function guessBelongsToManyRelation()
+    {
+        if (method_exists($this, 'getBelongsToManyCaller')) {
+            return $this->getBelongsToManyCaller();
+        }
+        return parent::guessBelongsToManyRelation();
     }
 }

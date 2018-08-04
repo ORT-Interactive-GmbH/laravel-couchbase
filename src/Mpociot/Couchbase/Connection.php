@@ -74,7 +74,7 @@ class Connection extends \Illuminate\Database\Connection
 
         // Select database
         $this->bucketname = $config['bucket'];
-        $this->bucket = $this->connection->openBucket($this->bucketname);
+        $this->bucket = $this->connection->openBucket($this->bucketname, $config['password']);
         $this->inlineParameters = isset($config['inline_parameters']) ? (bool)$config['inline_parameters'] : false;
 
         $this->useDefaultQueryGrammar();
@@ -366,6 +366,9 @@ class Connection extends \Illuminate\Database\Connection
      */
     protected function createConnection($dsn, array $config)
     {
+        if(is_array($config['host'])){
+            $cluster = new CouchbaseCluster(implode(', ', $config['host']));
+        }
         $cluster = new CouchbaseCluster($config['host']);
         if (!empty($config['username']) && !empty($config['password'])) {
             if (!method_exists($cluster, 'authenticateAs')) {
