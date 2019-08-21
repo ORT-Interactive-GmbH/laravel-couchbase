@@ -4,6 +4,7 @@ use Mpociot\Couchbase\Eloquent\Model as Eloquent;
 
 class Item extends Eloquent
 {
+    protected $connection = 'couchbase-not-default';
     protected $table = 'items';
     protected static $unguarded = true;
 

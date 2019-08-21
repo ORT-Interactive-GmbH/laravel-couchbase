@@ -4,6 +4,7 @@ use Mpociot\Couchbase\Eloquent\Model as Eloquent;
 
 class Book extends Eloquent
 {
+    protected $connection = 'couchbase-not-default';
     protected $table = 'books';
     protected static $unguarded = true;
     protected $primaryKey = 'title';

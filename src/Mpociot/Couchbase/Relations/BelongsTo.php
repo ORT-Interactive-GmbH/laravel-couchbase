@@ -2,6 +2,8 @@
 
 namespace Mpociot\Couchbase\Relations;
 
+use Illuminate\Support\Arr;
+
 class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
 {
     /**
@@ -13,7 +15,11 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
             // For belongs to relationships, which are essentially the inverse of has one
             // or has many relationships, we need to actually query on the primary key
             // of the related models matching on the foreign key that's on a parent.
-            $this->query->where($this->ownerKey, '=', $this->parent->{$this->foreignKey});
+            if($this->ownerKey === '_id') {
+                $this->query->useKeys([$this->parent->{$this->foreignKey}]);
+            } else {
+                $this->query->where($this->ownerKey, '=', $this->parent->{$this->foreignKey});
+            }
         }
     }
 
@@ -29,6 +35,10 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
         // our eagerly loading query so it returns the proper models from execution.
         $key = $this->ownerKey;
 
-        $this->query->whereIn($key, $this->getEagerModelKeys($models));
+        if($key === '_id') {
+            $this->query->useKeys(Arr::flatten($this->getEagerModelKeys($models)));
+        } else {
+            $this->query->whereIn($key, $this->getEagerModelKeys($models));
+        }
     }
 }

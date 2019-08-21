@@ -11,7 +11,7 @@ class ValidationTest extends TestCase
     {
         $validator = Validator::make(
             ['name' => 'John Doe'],
-            ['name' => 'required|unique:users']
+            ['name' => 'required|unique:couchbase-not-default.users']
         );
         $this->assertFalse($validator->fails());
 
@@ -19,7 +19,7 @@ class ValidationTest extends TestCase
 
         $validator = Validator::make(
             ['name' => 'John Doe'],
-            ['name' => 'required|unique:users']
+            ['name' => 'required|unique:couchbase-not-default.users']
         );
         $this->assertTrue($validator->fails());
     }

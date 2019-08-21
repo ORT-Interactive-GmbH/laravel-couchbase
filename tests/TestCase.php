@@ -42,9 +42,10 @@ class TestCase extends Orchestra\Testbench\TestCase
 
         $appConfig->set('app.key', 'ZsZewWyUJ5FsKp9lMwv4tYbNlegQilM7');
 
-        $appConfig->set('database.default', 'couchbase');
+        $appConfig->set('database.default', 'couchbase-default');
         $appConfig->set('database.connections.mysql', $config['connections']['mysql']);
-        $appConfig->set('database.connections.couchbase', $config['connections']['couchbase']);
+        $appConfig->set('database.connections.couchbase-default', $config['connections']['couchbase-default']);
+        $appConfig->set('database.connections.couchbase-not-default', $config['connections']['couchbase-not-default']);
 
         $appConfig->set('auth.model', 'User');
         $appConfig->set('auth.providers.users.model', 'User');

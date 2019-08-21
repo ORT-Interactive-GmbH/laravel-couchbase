@@ -4,6 +4,7 @@ use Mpociot\Couchbase\Eloquent\Model as Eloquent;
 
 class Role extends Eloquent
 {
+    protected $connection = 'couchbase-not-default';
     protected $table = 'roles';
     protected static $unguarded = true;
 

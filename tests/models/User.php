@@ -10,6 +10,7 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
 {
     use Authenticatable, CanResetPassword;
 
+    protected $connection = 'couchbase-not-default';
     protected $dates = ['birthday', 'entry.date'];
     protected static $unguarded = true;
 
