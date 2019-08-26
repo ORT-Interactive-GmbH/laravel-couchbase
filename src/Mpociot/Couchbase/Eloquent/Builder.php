@@ -1,4 +1,3 @@
-<?php declare(strict_types=1);
 
 namespace Mpociot\Couchbase\Eloquent;
 
@@ -9,40 +8,17 @@ use Mpociot\Couchbase\Query\Builder as QueryBuilder;
 use Illuminate\Database\Query\Builder as BaseQueryBuilder;
 
 class Builder extends EloquentBuilder
-{
-    /**
-     * The methods that should be returned from query builder.
-     *
-     * @var array
-     */
-    protected $passthru = [
-        'insert',
-        'insertGetId',
-        'getBindings',
-        'getRawBindings',
-        'toSql',
-        'exists',
-        'count',
-        'min',
-        'max',
-        'avg',
-        'sum',
-        'getConnection',
-        'pluck',
-        'push',
-        'pull',
-    ];
-
-    /**
-     * Create a new Eloquent query builder instance.
-     *
-     * @param  BaseQueryBuilder $query
-     * @throws \Exception
-     * @return void
-     */
+ The 
+    
+      Create a new Eloquent query builder instance.
+     
+      BaseQueryBuilder $query
+     Exception
+      @return void
+     
     public function __construct(BaseQueryBuilder $query)
-    {
-        if(!($query instanceof QueryBuilder)) {
+    
+         instanceof QueryBuilder)) {
             throw new \Exception('Argument 1 passed to '.get_class($this).'::__construct() must be an instance of '.QueryBuilder::class.', instance of '.get_class($query).' given.');
         }
         parent::__construct($query);
