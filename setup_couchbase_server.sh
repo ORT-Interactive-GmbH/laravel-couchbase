@@ -5,10 +5,7 @@ echo "Install Couchbase $CB_VERSION"
 
 if [[ $CB_VERSION == 6* ]]; then
 
-    # Couchbase PHP SDK & Server
-    curl -O https://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-amd64.deb
-    dpkg -i ./couchbase-release-1.0-amd64.deb || true
-    apt-get update -yqq
+    # Couchbase PHP SDK
     apt-get install -yqq $(sudo apt-cache search libcouchbase | cut -d ' ' -f 1) couchbase-server=6.5.1
 
     # Bucket init
@@ -30,10 +27,6 @@ if [[ $CB_VERSION == 6* ]]; then
 
 elif [[ $CB_VERSION == 5* ]]; then
 
-    # Couchbase PHP SDK
-    wget http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-4-amd64.deb
-    dpkg -i couchbase-release-1.0-4-amd64.deb
-    apt-get update -yqq
     apt-get install libcouchbase-dev python-httplib2 -yqq
 
     # Couchbase Server
@@ -57,9 +50,6 @@ elif [[ $CB_VERSION == 5* ]]; then
     /opt/couchbase/bin/cbq -e 127.0.0.1:8093 -u Administrator -p password --script "CREATE PRIMARY INDEX ON \`$CB_DATABASE\` USING GSI;"
 else
     # Couchbase PHP SDK
-    wget http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-4-amd64.deb
-    dpkg -i couchbase-release-1.0-4-amd64.deb
-    apt-get update -yqq
     apt-get install libcouchbase-dev -yqq
 
     # Couchbase Server
