@@ -11,9 +11,10 @@ variables:
 cache:
   paths:
     - vendor/
-    - downloads
+    - downloads/
 
 before_script:
+  - mkdir -p downloads
   - set -e
 
   # Install dependencies
