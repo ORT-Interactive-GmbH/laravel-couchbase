@@ -183,12 +183,6 @@ class Grammar extends BaseGrammar
         return implode(', ', $this->wrapArray($query->returning));
     }
 
-    protected function whereBasic(Builder $query, $where)
-    {
-        $where['value'] = $this->parameter($where['value']);
-        return parent::whereBetween($query, $where);
-    }
-
     /**
      * Compile a "where null" clause.
      *
