@@ -19,7 +19,7 @@ before_script:
 
   # Install dependencies
   - apt-get update -yqq
-  - apt-get install -yqq wget libssl1.1 libssl-dev git libxml2-dev libexpat1-dev libbz2-dev libgmp3-dev libldap2-dev unixodbc-dev libpq-dev libsqlite3-dev libaspell-dev libsnmp-dev libpcre3-dev libtidy-dev lsb-release gnupg2 net-tools
+  - apt-get install -yqq wget libssl1.1 libssl-dev git libxml2-dev libexpat1-dev libbz2-dev libgmp3-dev libldap2-dev unixodbc-dev libpq-dev libsqlite3-dev libaspell-dev libsnmp-dev libpcre3-dev libtidy-dev lsb-release gnupg2 net-tools libzip
 
   - test -f downloads/couchbase-release-1.0-6-amd64.deb || curl --output downloads/couchbase-release-1.0-6-amd64.deb http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-6-amd64.deb
   - dpkg -i downloads/couchbase-release-1.0-6-amd64.deb
