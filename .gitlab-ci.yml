@@ -25,7 +25,9 @@ before_script:
   - apt-get update -yqq
 
   # Couchbase Server
+  - echo "Installing CB Server ..."
   - bash setup_couchbase_server.sh
+  - echo "Installing CB Server DONE"
 
   # Install php extensions
   - docker-php-ext-install pdo_mysql json zip #mbstring mcrypt curl intl gd xml bz2 opcache
