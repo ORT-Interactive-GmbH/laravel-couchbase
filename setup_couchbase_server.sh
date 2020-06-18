@@ -28,7 +28,7 @@ if [[ $CB_VERSION == 6* ]]; then
 
     /opt/couchbase/bin/cbq -e 127.0.0.1:8093 -u Administrator -p password --script "CREATE PRIMARY INDEX ON \`$CB_DATABASE\` USING GSI;"
 
-else if [[ $CB_VERSION == 5* ]]; then
+elif [[ $CB_VERSION == 5* ]]; then
 
     # Couchbase PHP SDK
     wget http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-4-amd64.deb
