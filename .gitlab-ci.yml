@@ -13,6 +13,7 @@ cache:
     - vendor/
 
 before_script:
+  - lsb_release -dc -s
   - set -e
 
   - apt-get update -yqq
@@ -41,26 +42,6 @@ before_script:
   # Install Composer and project dependencies.
   - curl -sS https://getcomposer.org/installer | php
   - php composer.phar install --prefer-dist --no-interaction
-
-test:php7.1:cb5:
-  variables:
-    CB_DATABASE: "test-ing-cb5"
-    CB_VERSION: 5
-  image: php:7.1
-  script:
-    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
-  tags:
-  - docker
-
-test:php7.1:cb6:
-  variables:
-    CB_DATABASE: "test-ing-cb6"
-    CB_VERSION: 6
-  image: php:7.1
-  script:
-    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
-  tags:
-  - docker
 
 test:php7.2:cb5:
   variables:
