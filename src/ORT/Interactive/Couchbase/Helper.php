@@ -6,9 +6,9 @@ class Helper
 {
     const TYPE_NAME = 'eloquent_type';
 
-    public static function getUniqueId($praefix = null)
+    public static function getUniqueId($prefix = null)
     {
-        return (($praefix !== null) ? $praefix . '::' : '') . uniqid();
+        return (($prefix !== null) ? $prefix . '::' : '') . uniqid();
     }
 
 }

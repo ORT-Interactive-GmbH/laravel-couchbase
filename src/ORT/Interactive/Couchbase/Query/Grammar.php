@@ -4,6 +4,7 @@ namespace ORT\Interactive\Couchbase\Query;
 
 use Exception;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
@@ -180,6 +181,12 @@ class Grammar extends BaseGrammar
     protected function compileReturning(Builder $query)
     {
         return implode(', ', $this->wrapArray($query->returning));
+    }
+
+    protected function whereBasic(Builder $query, $where)
+    {
+        $where['value'] = $this->parameter($where['value']);
+        return parent::whereBetween($query, $where);
     }
 
     /**
