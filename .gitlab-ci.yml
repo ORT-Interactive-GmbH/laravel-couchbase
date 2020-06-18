@@ -45,6 +45,8 @@ test:php7.1:cb4:
   image: php:7.1
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
 
 test:php7.1:cb5:
   variables:
@@ -53,6 +55,8 @@ test:php7.1:cb5:
   image: php:7.1
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+  - docker
 
 test:php7.1:cb6:
   variables:
@@ -61,6 +65,8 @@ test:php7.1:cb6:
   image: php:7.1
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+  - docker
 
 test:php7.2:cb5:
   variables:
@@ -69,6 +75,8 @@ test:php7.2:cb5:
   image: php:7.2
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
 
 test:php7.2:cb4:
   variables:
@@ -77,6 +85,8 @@ test:php7.2:cb4:
   image: php:7.2
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
 
 test:php7.2:cb6:
   variables:
@@ -85,6 +95,8 @@ test:php7.2:cb6:
   image: php:7.2
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
 
 test:php7.3cb4:
   variables:
@@ -93,6 +105,8 @@ test:php7.3cb4:
   image: php:7.3
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
 
 test:php7.3cb5:
   variables:
@@ -101,6 +115,8 @@ test:php7.3cb5:
   image: php:7.3
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
 
 test:php7.3:cb6:
   variables:
@@ -109,6 +125,8 @@ test:php7.3:cb6:
   image: php:7.3
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
 
 test:php7.4cb4:
   variables:
@@ -117,6 +135,8 @@ test:php7.4cb4:
   image: php:7.4
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
 
 test:php7.4cb5:
   variables:
@@ -125,6 +145,8 @@ test:php7.4cb5:
   image: php:7.4
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
 
 test:php7.4:cb6:
   variables:
@@ -133,3 +155,5 @@ test:php7.4:cb6:
   image: php:7.4
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
