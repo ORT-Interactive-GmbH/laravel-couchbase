@@ -47,7 +47,7 @@ test:php7.2:cb5:
   variables:
     CB_DATABASE: "test-ing-cb5"
     CB_VERSION: 5
-  image: php:7.2
+  image: php:7.2-stretch
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
   tags:
@@ -57,7 +57,7 @@ test:php7.2:cb6:
   variables:
     CB_DATABASE: "test-ing-cb6"
     CB_VERSION: 6
-  image: php:7.2
+  image: php:7.2-stretch
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
   tags:
@@ -67,7 +67,7 @@ test:php7.3cb5:
   variables:
     CB_DATABASE: "test-ing-cb5"
     CB_VERSION: 5
-  image: php:7.3
+  image: php:7.3-stretch
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
   tags:
@@ -77,27 +77,7 @@ test:php7.3:cb6:
   variables:
     CB_DATABASE: "test-ing-cb6"
     CB_VERSION: 6
-  image: php:7.3
-  script:
-    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
-  tags:
-    - docker
-
-test:php7.4cb5:
-  variables:
-    CB_DATABASE: "test-ing-cb5"
-    CB_VERSION: 5
-  image: php:7.4
-  script:
-    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
-  tags:
-    - docker
-
-test:php7.4:cb6:
-  variables:
-    CB_DATABASE: "test-ing-cb6"
-    CB_VERSION: 6
-  image: php:7.4
+  image: php:7.3-stretch
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
   tags:
