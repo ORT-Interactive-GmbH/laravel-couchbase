@@ -6,7 +6,7 @@ echo "Install Couchbase $CB_VERSION"
 if [[ $CB_VERSION == 6* ]]; then
 
     # Couchbase PHP SDK
-    apt-get install -yqq $(sudo apt-cache search libcouchbase | cut -d ' ' -f 1) couchbase-server=6.5.1
+    apt-get install -yqq $(apt-cache search libcouchbase | cut -d ' ' -f 1) couchbase-server=6.5.1
 
     # Bucket init
     /opt/couchbase/bin/couchbase-server -- -noinput -detached
