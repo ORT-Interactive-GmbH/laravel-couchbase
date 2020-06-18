@@ -6,7 +6,9 @@ echo "Install Couchbase $CB_VERSION"
 if [[ $CB_VERSION == 6* ]]; then
 
     # Couchbase PHP SDK
-    apt-get install -yqq $(apt-cache search libcouchbase | cut -d ' ' -f 1) couchbase-server=6.5.1
+    apt-get install -yqq $(apt-cache search libcouchbase | cut -d ' ' -f 1)
+    wget https://packages.couchbase.com/releases/6.5.1/couchbase-server-enterprise_6.5.1-debian9_amd64.deb
+    dpkg -i couchbase-server-enterprise_6.5.1-debian9_amd64.deb
 
     # Bucket init
     /opt/couchbase/bin/couchbase-server -- -noinput -detached
@@ -30,8 +32,8 @@ elif [[ $CB_VERSION == 5* ]]; then
     apt-get install libcouchbase-dev python-httplib2 -yqq
 
     # Couchbase Server
-    wget https://packages.couchbase.com/releases/5.0.1/couchbase-server-enterprise_5.0.1-debian8_amd64.deb
-    dpkg -i couchbase-server-enterprise_5.0.1-debian8_amd64.deb
+    wget https://packages.couchbase.com/releases/5.0.1/couchbase-server-enterprise_5.0.1-debian9_amd64.deb
+    dpkg -i couchbase-server-enterprise_5.0.1-debian9_amd64.deb
 
     # Bucket init
     /opt/couchbase/bin/couchbase-server -- -noinput -detached
