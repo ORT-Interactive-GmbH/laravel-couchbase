@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\DB;
-use Mpociot\Couchbase\Events\QueryFired;
+use ORT\Interactive\Couchbase\Events\QueryFired;
 
 class InlineParametersTest extends TestCase
 {
@@ -16,7 +16,7 @@ class InlineParametersTest extends TestCase
      */
     public function testInlineParameters()
     {
-        /** @var \Mpociot\Couchbase\Query\Builder $query */
+        /** @var \ORT\Interactive\Couchbase\Query\Builder $query */
         $query = DB::table('table6')->select();
 
         $this->assertEquals(true, config('database.connections.couchbase.inline_parameters'));
@@ -32,7 +32,7 @@ class InlineParametersTest extends TestCase
      */
     public function testInlineParametersSwitchToOff()
     {
-        /** @var \Mpociot\Couchbase\Query\Builder $query */
+        /** @var \ORT\Interactive\Couchbase\Query\Builder $query */
         $query = DB::table('table6')->select();
 
         $this->assertEquals(true, DB::hasInlineParameters());
@@ -57,7 +57,7 @@ class InlineParametersTest extends TestCase
     {
         DB::setInlineParameters(false);
 
-        /** @var \Mpociot\Couchbase\Query\Builder $query */
+        /** @var \ORT\Interactive\Couchbase\Query\Builder $query */
         $query = DB::table('table6')->select();
 
         $this->assertEquals(false, DB::hasInlineParameters());
@@ -81,7 +81,7 @@ class InlineParametersTest extends TestCase
     {
         DB::setInlineParameters(true);
 
-        /** @var \Mpociot\Couchbase\Query\Builder $query */
+        /** @var \ORT\Interactive\Couchbase\Query\Builder $query */
         $query = DB::table('table6')->whereRaw('`foo` = ?', ['bar']);
 
         $this->assertEquals(true, DB::hasInlineParameters());
@@ -91,7 +91,7 @@ class InlineParametersTest extends TestCase
             []);
 
 
-        /** @var \Mpociot\Couchbase\Query\Builder $query */
+        /** @var \ORT\Interactive\Couchbase\Query\Builder $query */
         $query = DB::table('table6')->whereRaw('`foo?` = ? or `abc` = ?', ['bar', 'def']);
 
         $this->assertEquals(true, DB::hasInlineParameters());

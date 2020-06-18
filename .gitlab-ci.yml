@@ -10,7 +10,7 @@ variables:
 
 cache:
   paths:
-  - vendor/
+    - vendor/
 
 before_script:
   - set -e
@@ -21,12 +21,6 @@ before_script:
   # Install dependencies
   - apt-get install git libxml2-dev libexpat1-dev libbz2-dev libgmp3-dev libldap2-dev unixodbc-dev libpq-dev libsqlite3-dev libaspell-dev libsnmp-dev libpcre3-dev libtidy-dev -yqq
   - apt-get install lsb-release -yqq #libmcrypt-dev libcurl4-openssl-dev
-
-  # Couchbase PHP SDK
-  - wget http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-4-amd64.deb
-  - dpkg -i couchbase-release-1.0-4-amd64.deb
-  - apt-get update -yqq
-  - apt-get install libcouchbase-dev -yqq
 
   # Couchbase Server
   - bash setup_couchbase_server.sh
@@ -44,40 +38,98 @@ before_script:
   - curl -sS https://getcomposer.org/installer | php
   - php composer.phar install --prefer-dist --no-interaction
 
-
-test_php7.0_cb4:
-  variables:
-    CB_DATABASE: "test-ing-cb4"
-    CB_VERSION: 4
-  image: php:7.0
-  script:
-  # run laravel tests
-  - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
-
-test_php7.1_cb4:
+test:php7.1:cb4:
   variables:
     CB_DATABASE: "test-ing-cb4"
     CB_VERSION: 4
   image: php:7.1
   script:
-  # run laravel tests
-  - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
 
-test_php7.1_cb5:
+test:php7.1:cb5:
   variables:
     CB_DATABASE: "test-ing-cb5"
     CB_VERSION: 5
   image: php:7.1
   script:
-  # run laravel tests
-  - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
 
-# couchbase does not work with debian 9
-#test_php7.2_cb5:
-#  variables:
-#    CB_DATABASE: "test-ing-cb5"
-#    CB_VERSION: 5
-#  image: php:7.2
-#  script:
-#  # run laravel tests
-#  - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+test:php7.1:cb6:
+  variables:
+    CB_DATABASE: "test-ing-cb6"
+    CB_VERSION: 6
+  image: php:7.1
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+
+test:php7.2:cb5:
+  variables:
+    CB_DATABASE: "test-ing-cb5"
+    CB_VERSION: 5
+  image: php:7.2
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+
+test:php7.2:cb4:
+  variables:
+    CB_DATABASE: "test-ing-cb4"
+    CB_VERSION: 4
+  image: php:7.2
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+
+test:php7.2:cb6:
+  variables:
+    CB_DATABASE: "test-ing-cb6"
+    CB_VERSION: 6
+  image: php:7.2
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+
+test:php7.3cb4:
+  variables:
+    CB_DATABASE: "test-ing-cb4"
+    CB_VERSION: 4
+  image: php:7.3
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+
+test:php7.3cb5:
+  variables:
+    CB_DATABASE: "test-ing-cb5"
+    CB_VERSION: 5
+  image: php:7.3
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+
+test:php7.3:cb6:
+  variables:
+    CB_DATABASE: "test-ing-cb6"
+    CB_VERSION: 6
+  image: php:7.3
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+
+test:php7.4cb4:
+  variables:
+    CB_DATABASE: "test-ing-cb4"
+    CB_VERSION: 4
+  image: php:7.4
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+
+test:php7.4cb5:
+  variables:
+    CB_DATABASE: "test-ing-cb5"
+    CB_VERSION: 5
+  image: php:7.4
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+
+test:php7.4:cb6:
+  variables:
+    CB_DATABASE: "test-ing-cb6"
+    CB_VERSION: 6
+  image: php:7.4
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml

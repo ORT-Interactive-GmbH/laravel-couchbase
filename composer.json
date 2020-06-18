@@ -1,42 +1,47 @@
 {
-    "name": "ort-interactive-gmbh/laravel-couchbase",
-    "description": "A Couchbase based Eloquent model and Query builder for Laravel",
-    "keywords": ["laravel","eloquent","couchbase","database","model"],
-    "homepage": "https://github.com/ORT-Interactive-GmbH/laravel-couchbase",
-    "authors": [
-    ],
-    "license" : "MIT",
-    "require": {
-        "php": "^7.0",
-        "illuminate/support": "^5.4",
-        "illuminate/container": "^5.4",
-        "illuminate/database": "^5.4",
-        "illuminate/events": "^5.4",
-        "ext-couchbase": ">=2.4.0"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "^4.0|^5.0",
-        "orchestra/testbench": "^3.4.0",
-        "mockery/mockery": "^0.9"
-    },
-    "autoload": {
-        "psr-0": {
-            "Mpociot\\Couchbase": "src/",
-            "Mpociot\\Eloquent": "src/"
-        }
-    },
-    "autoload-dev": {
-        "classmap": [
-            "tests/TestCase.php",
-            "tests/models",
-            "tests/seeds"
-        ]
-    },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Mpociot\\Couchbase\\CouchbaseServiceProvider"
-            ]
-        }
+  "name": "ort-interactive-gmbh/laravel-couchbase",
+  "description": "A Couchbase based Eloquent model and Query builder for Laravel",
+  "keywords": [
+    "laravel",
+    "eloquent",
+    "couchbase",
+    "database",
+    "model"
+  ],
+  "homepage": "https://github.com/ORT-Interactive-GmbH/laravel-couchbase",
+  "authors": [
+  ],
+  "license": "MIT",
+  "require": {
+    "php": "^7.0",
+    "illuminate/support": "^5.4",
+    "illuminate/container": "^5.4",
+    "illuminate/database": "^5.4",
+    "illuminate/events": "^5.4",
+    "ext-couchbase": ">=2.4.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^4.0|^5.0",
+    "orchestra/testbench": "^3.4.0",
+    "mockery/mockery": "^0.9"
+  },
+  "autoload": {
+    "psr-0": {
+      "ORT\\Interactive\\Couchbase": "src/"
     }
+  },
+  "autoload-dev": {
+    "classmap": [
+      "tests/TestCase.php",
+      "tests/models",
+      "tests/seeds"
+    ]
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "ORT\\Interactive\\Couchbase\\CouchbaseServiceProvider"
+      ]
+    }
+  }
 }

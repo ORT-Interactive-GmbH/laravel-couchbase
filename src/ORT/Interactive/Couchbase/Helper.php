@@ -1,13 +1,6 @@
 <?php declare(strict_types=1);
-/**
- * Created by PhpStorm.
- * User: sascha.presnac
- * Date: 20.04.2017
- * Time: 13:23
- */
 
-namespace Mpociot\Couchbase;
-
+namespace ORT\Interactive\Couchbase;
 
 class Helper
 {
@@ -17,4 +10,5 @@ class Helper
     {
         return (($praefix !== null) ? $praefix . '::' : '') . uniqid();
     }
+
 }

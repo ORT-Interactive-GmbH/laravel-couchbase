@@ -565,7 +565,7 @@ class RelationsTest extends TestCase
         $user = User::create(['name' => 'John Doe']);
         $groupsRelation = $user->groups();
 
-        $this->assertTrue($groupsRelation instanceof \Mpociot\Couchbase\Relations\BelongsToMany,
+        $this->assertTrue($groupsRelation instanceof \ORT\Interactive\Couchbase\Relations\BelongsToMany,
             'Assert that User->groups is a BelongsToManyRelation');
         $this->assertTrue(is_array($groupsRelation->getBindings()), 'Assert that bindings are an array');
         $this->assertTrue(is_array($groupsRelation->getRawBindings()), 'Assert that raw bindings are an array');

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Mpociot\Couchbase;
+namespace ORT\Interactive\Couchbase;
 
 use Illuminate\Support\ServiceProvider;
-use Mpociot\Couchbase\Eloquent\Model;
+use ORT\Interactive\Couchbase\Eloquent\Model;
 
 class CouchbaseServiceProvider extends ServiceProvider
 {

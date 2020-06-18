@@ -5,7 +5,7 @@ class ConnectionTest extends TestCase
     public function testConnection()
     {
         $connection = DB::connection('couchbase');
-        $this->assertInstanceOf('Mpociot\Couchbase\Connection', $connection);
+        $this->assertInstanceOf('ORT\Interactive\Couchbase\Connection', $connection);
     }
 
     /**
@@ -15,8 +15,8 @@ class ConnectionTest extends TestCase
     {
         $this->markTestSkipped('Reconnect is currently not required.');
 
-        /** @var \Mpociot\Couchbase\Connection $c1 */
-        /** @var \Mpociot\Couchbase\Connection $c2 */
+        /** @var \ORT\Interactive\Couchbase\Connection $c1 */
+        /** @var \ORT\Interactive\Couchbase\Connection $c2 */
         $c1 = DB::connection('couchbase');
         $requiredReference = $c1->getCouchbaseCluster();
         // $requiredReference is required because of spl_object_hash(): Once the object is destroyed, its hash may be reused for other objects.
@@ -49,13 +49,13 @@ class ConnectionTest extends TestCase
     public function testBucketWithTypes()
     {
         $collection = DB::connection('couchbase')->builder('unittests');
-        $this->assertInstanceOf('Mpociot\Couchbase\Query\Builder', $collection);
+        $this->assertInstanceOf('ORT\Interactive\Couchbase\Query\Builder', $collection);
 
         $collection = DB::connection('couchbase')->table('unittests');
-        $this->assertInstanceOf('Mpociot\Couchbase\Query\Builder', $collection);
+        $this->assertInstanceOf('ORT\Interactive\Couchbase\Query\Builder', $collection);
 
         $collection = DB::connection('couchbase')->type('unittests');
-        $this->assertInstanceOf('Mpociot\Couchbase\Query\Builder', $collection);
+        $this->assertInstanceOf('ORT\Interactive\Couchbase\Query\Builder', $collection);
     }
 
     public function testQueryLog()

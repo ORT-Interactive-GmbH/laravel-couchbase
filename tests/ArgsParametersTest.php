@@ -1,7 +1,7 @@
 <?php
 
-use Mpociot\Couchbase\Query\Builder as Query;
-use Mpociot\Couchbase\Query\Grammar;
+use ORT\Interactive\Couchbase\Query\Builder as Query;
+use ORT\Interactive\Couchbase\Query\Grammar;
 
 class ArgsParametersTest extends TestCase
 {

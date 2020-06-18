@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Mpociot\Couchbase\Relations;
+namespace ORT\Interactive\Couchbase\Relations;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -263,7 +263,7 @@ abstract class EmbedsOneOrMany extends Relation
      * Convert an array of records to a Collection.
      *
      * @param  array $records
-     * @return \Mpociot\Couchbase\Eloquent\Collection
+     * @return \ORT\Interactive\Couchbase\Eloquent\Collection
      */
     protected function toCollection(array $records = [])
     {

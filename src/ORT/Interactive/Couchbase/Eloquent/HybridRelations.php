@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Mpociot\Couchbase\Eloquent;
+namespace ORT\Interactive\Couchbase\Eloquent;
 
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Str;
-use Mpociot\Couchbase\Relations\BelongsTo;
-use Mpociot\Couchbase\Relations\BelongsToMany;
-use Mpociot\Couchbase\Relations\HasMany;
-use Mpociot\Couchbase\Relations\HasOne;
-use Mpociot\Couchbase\Relations\MorphTo;
+use ORT\Interactive\Couchbase\Relations\BelongsTo;
+use ORT\Interactive\Couchbase\Relations\BelongsToMany;
+use ORT\Interactive\Couchbase\Relations\HasMany;
+use ORT\Interactive\Couchbase\Relations\HasOne;
+use ORT\Interactive\Couchbase\Relations\MorphTo;
 
 trait HybridRelations
 {
@@ -24,7 +24,7 @@ trait HybridRelations
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Mpociot\Couchbase\Eloquent\Model')) {
+        if (!is_subclass_of($related, 'ORT\Interactive\Couchbase\Eloquent\Model')) {
             return parent::hasOne($related, $foreignKey, $localKey);
         }
 
@@ -50,7 +50,7 @@ trait HybridRelations
     public function morphOne($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Mpociot\Couchbase\Eloquent\Model')) {
+        if (!is_subclass_of($related, 'ORT\Interactive\Couchbase\Eloquent\Model')) {
             return parent::morphOne($related, $name, $type, $id, $localKey);
         }
 
@@ -76,7 +76,7 @@ trait HybridRelations
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Mpociot\Couchbase\Eloquent\Model')) {
+        if (!is_subclass_of($related, 'ORT\Interactive\Couchbase\Eloquent\Model')) {
             return parent::hasMany($related, $foreignKey, $localKey);
         }
 
@@ -102,7 +102,7 @@ trait HybridRelations
     public function morphMany($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Mpociot\Couchbase\Eloquent\Model')) {
+        if (!is_subclass_of($related, 'ORT\Interactive\Couchbase\Eloquent\Model')) {
             return parent::morphMany($related, $name, $type, $id, $localKey);
         }
 
@@ -141,7 +141,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Mpociot\Couchbase\Eloquent\Model')) {
+        if (!is_subclass_of($related, 'ORT\Interactive\Couchbase\Eloquent\Model')) {
             return parent::belongsTo($related, $foreignKey, $otherKey, $relation);
         }
 
@@ -231,7 +231,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, \Mpociot\Couchbase\Eloquent\Model::class)) {
+        if (!is_subclass_of($related, \ORT\Interactive\Couchbase\Eloquent\Model::class)) {
             return parent::belongsToMany($related, $collection, $foreignKey, $otherKey, $parentKey, $relatedKey, $relation);
         }
 

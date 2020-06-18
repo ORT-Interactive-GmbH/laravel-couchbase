@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Mpociot\Couchbase\Eloquent;
+namespace ORT\Interactive\Couchbase\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pagination\Paginator;
-use Mpociot\Couchbase\Query\Builder as QueryBuilder;
+use ORT\Interactive\Couchbase\Query\Builder as QueryBuilder;
 use Illuminate\Database\Query\Builder as BaseQueryBuilder;
 
 class Builder extends EloquentBuilder

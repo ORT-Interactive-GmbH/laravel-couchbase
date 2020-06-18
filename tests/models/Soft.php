@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
-use Mpociot\Couchbase\Eloquent\Model as Eloquent;
-use Mpociot\Couchbase\Eloquent\SoftDeletes;
+use ORT\Interactive\Couchbase\Eloquent\Model as Eloquent;
+use ORT\Interactive\Couchbase\Eloquent\SoftDeletes;
 
 class Soft extends Eloquent
 {

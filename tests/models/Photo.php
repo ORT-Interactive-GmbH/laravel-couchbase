@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Mpociot\Couchbase\Eloquent\Model as Eloquent;
+use ORT\Interactive\Couchbase\Eloquent\Model as Eloquent;
 
 class Photo extends Eloquent
 {

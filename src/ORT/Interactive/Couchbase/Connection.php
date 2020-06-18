@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Mpociot\Couchbase;
+namespace ORT\Interactive\Couchbase;
 
 use Couchbase\N1qlQuery;
 use CouchbaseBucket;
 use CouchbaseCluster;
-use Mpociot\Couchbase\Events\QueryFired;
-use Mpociot\Couchbase\Query\Builder as QueryBuilder;
-use Mpociot\Couchbase\Query\Grammar as QueryGrammar;
+use ORT\Interactive\Couchbase\Events\QueryFired;
+use ORT\Interactive\Couchbase\Query\Builder as QueryBuilder;
+use ORT\Interactive\Couchbase\Query\Grammar as QueryGrammar;
 
 class Connection extends \Illuminate\Database\Connection
 {

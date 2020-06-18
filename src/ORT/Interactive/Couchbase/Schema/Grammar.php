@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Mpociot\Couchbase\Schema;
+namespace ORT\Interactive\Couchbase\Schema;
 
 use Illuminate\Database\Schema\Grammars\Grammar as BaseGrammar;
 

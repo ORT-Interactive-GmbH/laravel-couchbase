@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 return [
     'connections' => [
         'couchbase' => strpos(env('CB_VERSION', '4'), '4') === 0 ? [
@@ -19,7 +20,7 @@ return [
             'bucket' => env('CB_DATABASE', env('CB_BUCKET', 'test-ing')),
             'username' => env('CB_USER', env('CB_USERNAME', 'dbuser_backend')),
             'password' => env('CB_PASSWORD', 'password_backend'),
-            'auth_type' => env('CB_AUTH_TYPE', \Mpociot\Couchbase\Connection::AUTH_TYPE_USER_PASSWORD),
+            'auth_type' => env('CB_AUTH_TYPE', \ORT\Interactive\Couchbase\Connection::AUTH_TYPE_USER_PASSWORD),
             'admin_username' => env('CB_ADMIN_USERNAME', env('CB_USER', env('CB_USERNAME', 'Administrator'))),
             'admin_password' => env('CB_ADMIN_PASSWORD', env('CB_PASSWORD', 'password')),
             'inline_parameters' => env('CB_INLINE_PARAMETERS', false),

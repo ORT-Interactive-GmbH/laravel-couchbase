@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Mpociot\Couchbase\Eloquent;
+namespace ORT\Interactive\Couchbase\Eloquent;
 
 trait SoftDeletes
 {

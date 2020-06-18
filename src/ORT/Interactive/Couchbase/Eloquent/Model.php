@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Mpociot\Couchbase\Eloquent;
+namespace ORT\Interactive\Couchbase\Eloquent;
 
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
-use Mpociot\Couchbase\Query\Builder as QueryBuilder;
-use Mpociot\Couchbase\Query\Grammar;
-use Mpociot\Couchbase\Relations\EmbedsMany;
-use Mpociot\Couchbase\Relations\EmbedsOne;
+use ORT\Interactive\Couchbase\Query\Builder as QueryBuilder;
+use ORT\Interactive\Couchbase\Query\Grammar;
+use ORT\Interactive\Couchbase\Relations\EmbedsMany;
+use ORT\Interactive\Couchbase\Relations\EmbedsOne;
 use Illuminate\Support\Str;
 
 abstract class Model extends BaseModel
@@ -80,7 +80,7 @@ abstract class Model extends BaseModel
      * @param  string $localKey
      * @param  string $foreignKey
      * @param  string $relation
-     * @return \Mpociot\Couchbase\Relations\EmbedsMany
+     * @return \ORT\Interactive\Couchbase\Relations\EmbedsMany
      */
     protected function embedsMany($related, $localKey = null, $foreignKey = null, $relation = null)
     {
@@ -115,7 +115,7 @@ abstract class Model extends BaseModel
      * @param  string $localKey
      * @param  string $foreignKey
      * @param  string $relation
-     * @return \Mpociot\Couchbase\Relations\EmbedsOne
+     * @return \ORT\Interactive\Couchbase\Relations\EmbedsOne
      */
     protected function embedsOne($related, $localKey = null, $foreignKey = null, $relation = null)
     {
@@ -411,8 +411,8 @@ abstract class Model extends BaseModel
     /**
      * Create a new Eloquent query builder for the model.
      *
-     * @param  \Mpociot\Couchbase\Query\Builder $query
-     * @return \Mpociot\Couchbase\Eloquent\Builder|static
+     * @param  \ORT\Interactive\Couchbase\Query\Builder $query
+     * @return \ORT\Interactive\Couchbase\Eloquent\Builder|static
      */
     public function newEloquentBuilder($query)
     {

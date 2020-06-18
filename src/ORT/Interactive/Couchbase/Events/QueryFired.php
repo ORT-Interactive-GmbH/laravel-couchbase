@@ -1,13 +1,6 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: lukas.quast
- * Date: 01.03.18
- * Time: 10:52
- */
+<?php declare(strict_types=1);
 
-namespace Mpociot\Couchbase\Events;
-
+namespace ORT\Interactive\Couchbase\Events;
 
 class QueryFired
 {

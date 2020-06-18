@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Support\Facades\Schema;
-use Mpociot\Couchbase\Eloquent\HybridRelations;
+use ORT\Interactive\Couchbase\Eloquent\HybridRelations;
 
 class MysqlRole extends Eloquent
 {
