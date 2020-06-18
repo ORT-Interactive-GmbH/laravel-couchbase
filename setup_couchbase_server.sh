@@ -10,6 +10,9 @@ if [[ $CB_VERSION == 6* ]]; then
     test -f downloads/couchbase-server-enterprise_6.5.1-debian9_amd64.deb || curl --output downloads/couchbase-server-enterprise_6.5.1-debian9_amd64.deb https://packages.couchbase.com/releases/6.5.1/couchbase-server-enterprise_6.5.1-debian9_amd64.deb
     dpkg -i downloads/couchbase-server-enterprise_6.5.1-debian9_amd64.deb
 
+    sleep 30
+    netstat -tulpen
+
     # Install couchbase cluster
     /opt/couchbase/bin/couchbase-cli cluster-init -c 127.0.0.1:8091 --cluster-username=Administrator --cluster-password=password --cluster-port=8091 --cluster-index-ramsize=256 --cluster-fts-ramsize=256 --cluster-ramsize=2048 --services=data,index,query,fts
     sleep 5
