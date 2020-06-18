@@ -7,8 +7,8 @@ if [[ $CB_VERSION == 6* ]]; then
 
     # Couchbase PHP SDK
     apt-get install -yqq $(apt-cache search libcouchbase | cut -d ' ' -f 1)
-    wget https://packages.couchbase.com/releases/6.5.1/couchbase-server-enterprise_6.5.1-debian9_amd64.deb
-    dpkg -i couchbase-server-enterprise_6.5.1-debian9_amd64.deb
+    test -f downloads/couchbase-server-enterprise_6.5.1-debian9_amd64.deb || curl --output downloads/couchbase-server-enterprise_6.5.1-debian9_amd64.deb https://packages.couchbase.com/releases/6.5.1/couchbase-server-enterprise_6.5.1-debian9_amd64.deb
+    dpkg -i downloads/couchbase-server-enterprise_6.5.1-debian9_amd64.deb
 
     # Bucket init
     /opt/couchbase/bin/couchbase-server -- -noinput -detached
@@ -32,8 +32,8 @@ elif [[ $CB_VERSION == 5* ]]; then
     apt-get install libcouchbase-dev python-httplib2 -yqq
 
     # Couchbase Server
-    wget https://packages.couchbase.com/releases/5.0.1/couchbase-server-enterprise_5.0.1-debian9_amd64.deb
-    dpkg -i couchbase-server-enterprise_5.0.1-debian9_amd64.deb
+    test -f downloads/couchbase-server-enterprise_5.0.1-debian9_amd64.deb || curl --output downloads/couchbase-server-enterprise_5.0.1-debian9_amd64.deb https://packages.couchbase.com/releases/5.0.1/couchbase-server-enterprise_5.0.1-debian9_amd64.deb
+    dpkg -i downloads/couchbase-server-enterprise_5.0.1-debian9_amd64.deb
 
     # Bucket init
     /opt/couchbase/bin/couchbase-server -- -noinput -detached
@@ -55,8 +55,8 @@ else
     apt-get install libcouchbase-dev -yqq
 
     # Couchbase Server
-    wget https://packages.couchbase.com/releases/4.6.0-DP/couchbase-server-enterprise_4.6.0-DP-ubuntu12.04_amd64.deb
-    dpkg -i couchbase-server-enterprise_4.6.0-DP-ubuntu12.04_amd64.deb
+    test -f downloads/couchbase-server-enterprise_4.6.0-DP-ubuntu12.04_amd64.deb || curl --output downloads/couchbase-server-enterprise_4.6.0-DP-ubuntu12.04_amd64.deb https://packages.couchbase.com/releases/4.6.0-DP/couchbase-server-enterprise_4.6.0-DP-ubuntu12.04_amd64.deb
+    dpkg -i downloads/couchbase-server-enterprise_4.6.0-DP-ubuntu12.04_amd64.deb
 
     # Bucket init
     /opt/couchbase/bin/couchbase-server -- -noinput -detached
