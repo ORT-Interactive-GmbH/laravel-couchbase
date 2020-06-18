@@ -13,7 +13,6 @@ cache:
     - vendor/
 
 before_script:
-  - lsb_release -dc -s
   - set -e
 
   - apt-get update -yqq
