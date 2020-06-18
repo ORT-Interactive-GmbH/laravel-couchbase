@@ -1,7 +1,7 @@
 image: php
 
 services:
-  - mysql:latest
+  - mysql:5.7
 
 variables:
   MYSQL_DATABASE: testing
@@ -19,7 +19,7 @@ before_script:
 
   # Install dependencies
   - apt-get update -yqq
-  - apt-get install -yqq wget libssl1.1 libssl-dev git libxml2-dev libexpat1-dev libbz2-dev libgmp3-dev libldap2-dev unixodbc-dev libpq-dev libsqlite3-dev libaspell-dev libsnmp-dev libpcre3-dev libtidy-dev lsb-release gnupg2 net-tools libzip-dev libzip4
+  - apt-get install -yqq wget libssl1.1 libssl-dev git libxml2-dev libexpat1-dev libbz2-dev libgmp3-dev libldap2-dev unixodbc-dev libpq-dev libsqlite3-dev libaspell-dev libsnmp-dev libpcre3-dev libtidy-dev lsb-release gnupg2 net-tools libzip-dev libzip4 unzip
 
   - test -f downloads/couchbase-release-1.0-6-amd64.deb || curl --output downloads/couchbase-release-1.0-6-amd64.deb http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-6-amd64.deb
   - dpkg -i downloads/couchbase-release-1.0-6-amd64.deb
@@ -41,7 +41,8 @@ before_script:
 
   # Install Composer and project dependencies.
   - curl -sS https://getcomposer.org/installer | php
-  - php composer.phar install --prefer-dist --no-interaction
+  - php -d default_socket_timeout=1 -d memory_limit=-1 composer.phar global require hirak/prestissimo --prefer-dist --no-ansi
+  - php -d default_socket_timeout=1 -d memory_limit=-1 composer.phar install --no-interaction --prefer-dist --profile -vvv --no-ansi
 
 #test:php7.2:cb5:
 #  variables:
