@@ -17,7 +17,7 @@ before_script:
 
   # Install dependencies
   - apt-get update -yqq
-  - apt-get install -yqq wget libssl1.1 libssl-dev git libxml2-dev libexpat1-dev libbz2-dev libgmp3-dev libldap2-dev unixodbc-dev libpq-dev libsqlite3-dev libaspell-dev libsnmp-dev libpcre3-dev libtidy-dev lsb-release
+  - apt-get install -yqq wget libssl1.1 libssl-dev git libxml2-dev libexpat1-dev libbz2-dev libgmp3-dev libldap2-dev unixodbc-dev libpq-dev libsqlite3-dev libaspell-dev libsnmp-dev libpcre3-dev libtidy-dev lsb-release gnupg2
 
   - curl -O http://packages.couchbase.com/releases/couchbase-release/couchbase-release-1.0-6-amd64.deb
   - dpkg -i ./couchbase-release-1.0-6-amd64.deb
@@ -39,35 +39,35 @@ before_script:
   - curl -sS https://getcomposer.org/installer | php
   - php composer.phar install --prefer-dist --no-interaction
 
-test:php7.2:cb5:
-  variables:
-    CB_DATABASE: "test-ing-cb5"
-    CB_VERSION: 5
-  image: php:7.2-stretch
-  script:
-    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
-  tags:
-    - docker
+#test:php7.2:cb5:
+#  variables:
+#    CB_DATABASE: "test-ing-cb5"
+#    CB_VERSION: 5
+#  image: php:7.2-stretch
+#  script:
+#    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+#  tags:
+#    - docker
 
-test:php7.2:cb6:
-  variables:
-    CB_DATABASE: "test-ing-cb6"
-    CB_VERSION: 6
-  image: php:7.2-stretch
-  script:
-    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
-  tags:
-    - docker
+#test:php7.2:cb6:
+#  variables:
+#    CB_DATABASE: "test-ing-cb6"
+#    CB_VERSION: 6
+#  image: php:7.2-stretch
+#  script:
+#    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+#  tags:
+#    - docker
 
-test:php7.3cb5:
-  variables:
-    CB_DATABASE: "test-ing-cb5"
-    CB_VERSION: 5
-  image: php:7.3-stretch
-  script:
-    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
-  tags:
-    - docker
+#test:php7.3cb5:
+##  variables:
+#    CB_DATABASE: "test-ing-cb5"
+#    CB_VERSION: 5
+#  image: php:7.3-stretch
+#  script:
+#    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+#  tags:
+#    - docker
 
 test:php7.3:cb6:
   variables:
