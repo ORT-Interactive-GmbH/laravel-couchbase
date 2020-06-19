@@ -44,15 +44,15 @@ before_script:
   - php -d default_socket_timeout=1 -d memory_limit=-1 composer.phar global require hirak/prestissimo --prefer-dist --no-ansi
   - php -d default_socket_timeout=1 -d memory_limit=-1 composer.phar install --no-interaction --prefer-dist --profile -vvv --no-ansi
 
-#test:php7.2:cb5:
-#  variables:
-#    CB_DATABASE: "test-ing-cb5"
-#    CB_VERSION: 5
-#  image: php:7.2-stretch
-#  script:
-#    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
-#  tags:
-#    - docker
+test:php7.2:cb5:
+  variables:
+    CB_DATABASE: "test-ing-cb5"
+    CB_VERSION: 5
+  image: php:7.2-stretch
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
 
 test:php7.2:cb6:
   variables:
