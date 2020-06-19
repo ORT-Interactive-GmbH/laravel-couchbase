@@ -44,19 +44,10 @@ before_script:
   - php -d default_socket_timeout=1 -d memory_limit=-1 composer.phar global require hirak/prestissimo --prefer-dist --no-ansi
   - php -d default_socket_timeout=1 -d memory_limit=-1 composer.phar install --no-interaction --prefer-dist --profile -vvv --no-ansi
 
-test:php7.2:cb5:
+test:php7.2:
   variables:
-    CB_DATABASE: "test-ing-cb5"
-    CB_VERSION: 5
-  image: php:7.2-stretch
-  script:
-    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
-  tags:
-    - docker
-
-test:php7.2:cb6:
-  variables:
-    CB_DATABASE: "test-ing-cb6"
+    DEBIAN_VERSION: 9
+    CB_DATABASE: "test-ing"
     CB_VERSION: 6
   image: php:7.2-stretch
   script:
@@ -64,22 +55,24 @@ test:php7.2:cb6:
   tags:
     - docker
 
-#test:php7.3cb5:
-##  variables:
-#    CB_DATABASE: "test-ing-cb5"
-#    CB_VERSION: 5
-#  image: php:7.3-stretch
-#  script:
-#    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
-#  tags:
-#    - docker
+test:php7.3:
+  variables:
+    DEBIAN_VERSION: 9
+    CB_DATABASE: "test-ing"
+    CB_VERSION: 6
+  image: php:7.3-stretch
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
 
-#test:php7.3:cb6:
-#  variables:
-#    CB_DATABASE: "test-ing-cb6"
-#    CB_VERSION: 6
-#  image: php:7.3-stretch
-#  script:
-#    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
-#  tags:
-#    - docker
+test:php7.4:
+  variables:
+    DEBIAN_VERSION: 10
+    CB_DATABASE: "test-ing"
+    CB_VERSION: 6
+  image: php:7.4-buster
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
