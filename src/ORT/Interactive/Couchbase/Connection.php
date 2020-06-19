@@ -444,11 +444,11 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Get the default schema grammar instance.
      *
-     * @return Query\Grammar
+     * @return QueryGrammar
      */
     protected function getDefaultQueryGrammar()
     {
-        return new Query\Grammar();
+        return new QueryGrammar();
     }
 
     /**

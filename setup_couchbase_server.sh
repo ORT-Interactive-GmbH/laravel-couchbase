@@ -31,8 +31,8 @@ elif [[ $CB_VERSION == 5* ]]; then
     apt-get install libcouchbase-dev python-httplib2 -yqq
 
     # Couchbase Server
-    test -f downloads/couchbase-server-enterprise_5.0.1-debian9_amd64.deb || curl --output downloads/couchbase-server-enterprise_5.0.1-debian9_amd64.deb https://packages.couchbase.com/releases/5.0.1/couchbase-server-enterprise_5.0.1-debian9_amd64.deb
-    dpkg -i downloads/couchbase-server-enterprise_5.0.1-debian9_amd64.deb
+    test -f downloads/couchbase-server-enterprise_5.5.0-debian9_amd64.deb || curl --output downloads/couchbase-server-enterprise_5.0.1-debian9_amd64.deb https://packages.couchbase.com/releases/5.5.0/couchbase-server-enterprise_5.5.0-debian9_amd64.deb
+    dpkg -i downloads/couchbase-server-enterprise_5.5.0-debian9_amd64.deb
 
     # Bucket init
     /opt/couchbase/bin/couchbase-server -- -noinput -detached

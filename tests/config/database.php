@@ -29,7 +29,7 @@ return [
             'name' => 'mysql',
             'driver' => 'mysql',
             'host' => env('MYSQL_HOST', '127.0.0.1'),
-            'database' => 'testing',
+            'database' => env('MYSQL_DATABASE','testing'),
             'username' => env('MYSQL_USER', 'root'),
             'password' => env('MYSQL_PASSWORD', env('MYSQL_ROOT_PASSWORD')),
             'charset' => 'utf8',
