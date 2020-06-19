@@ -54,15 +54,15 @@ before_script:
 #  tags:
 #    - docker
 
-#test:php7.2:cb6:
-#  variables:
-#    CB_DATABASE: "test-ing-cb6"
-#    CB_VERSION: 6
-#  image: php:7.2-stretch
-#  script:
-#    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
-#  tags:
-#    - docker
+test:php7.2:cb6:
+  variables:
+    CB_DATABASE: "test-ing-cb6"
+    CB_VERSION: 6
+  image: php:7.2-stretch
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
 
 #test:php7.3cb5:
 ##  variables:
@@ -74,12 +74,12 @@ before_script:
 #  tags:
 #    - docker
 
-test:php7.3:cb6:
-  variables:
-    CB_DATABASE: "test-ing-cb6"
-    CB_VERSION: 6
-  image: php:7.3-stretch
-  script:
-    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
-  tags:
-    - docker
+#test:php7.3:cb6:
+#  variables:
+#    CB_DATABASE: "test-ing-cb6"
+#    CB_VERSION: 6
+#  image: php:7.3-stretch
+#  script:
+#    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+#  tags:
+#    - docker
