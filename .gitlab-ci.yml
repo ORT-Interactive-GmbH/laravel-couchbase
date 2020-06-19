@@ -19,8 +19,8 @@ stages:
   - laravel5.6
   - laravel5.7
   - laravel5.8
-  - laravel6.x
-  - laravel7.x
+  - laravel6.0
+  - laravel7.0
 
 before_script:
   - mkdir -p downloads
