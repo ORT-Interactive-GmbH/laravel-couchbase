@@ -1,0 +1,25 @@
+php7.2_laravel6.0:
+  stage: laravel6.0
+  variables:
+    LARAVEL_VERSION: "6.0"
+    DEBIAN_VERSION: 9
+    CB_DATABASE: "test-ing"
+    CB_VERSION: 6
+  image: php:7.2-stretch
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
+
+php7.3_laravel6.0:
+  stage: laravel6.0
+  variables:
+    LARAVEL_VERSION: "6.0"
+    DEBIAN_VERSION: 9
+    CB_DATABASE: "test-ing"
+    CB_VERSION: 6
+  image: php:7.3-stretch
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
