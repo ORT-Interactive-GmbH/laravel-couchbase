@@ -56,9 +56,3 @@ before_script:
 
 include:
   - local: ".gitlab-ci/laravel5.4.yml"
-  - local: ".gitlab-ci/laravel5.5.yml"
-  - local: ".gitlab-ci/laravel5.6.yml"
-  - local: ".gitlab-ci/laravel5.7.yml"
-  - local: ".gitlab-ci/laravel5.8.yml"
-  - local: ".gitlab-ci/laravel6.0.yml"
-  - local: ".gitlab-ci/laravel7.0.yml"
