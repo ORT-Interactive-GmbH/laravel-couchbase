@@ -4,13 +4,13 @@ namespace ORT\Interactive\Couchbase\Query;
 
 use Exception;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
 
 class Grammar extends BaseGrammar
 {
+
     const INDEX_TYPE_VIEW = 'VIEW';
     const INDEX_TYPE_GSI = 'GSI';
     const IDENTIFIER_ENCLOSURE_CHAR = '`';

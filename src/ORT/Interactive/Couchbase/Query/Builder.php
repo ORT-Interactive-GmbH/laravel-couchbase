@@ -252,7 +252,7 @@ class Builder extends BaseBuilder
         $this->type = $type;
 
         if (!is_null($type)) {
-            $this->where(Helper::TYPE_NAME, '=', $type);
+            $this->where(Helper::TYPE_NAME, $type);
         }
         return $this;
     }
