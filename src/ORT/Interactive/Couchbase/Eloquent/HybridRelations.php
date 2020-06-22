@@ -2,16 +2,14 @@
 
 namespace ORT\Interactive\Couchbase\Eloquent;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Str;
 use ORT\Interactive\Couchbase\Relations\BelongsTo;
 use ORT\Interactive\Couchbase\Relations\BelongsToMany;
 use ORT\Interactive\Couchbase\Relations\HasMany;
 use ORT\Interactive\Couchbase\Relations\HasOne;
 use ORT\Interactive\Couchbase\Relations\MorphTo;
+use ORT\Interactive\Couchbase\Relations\MorphOne;
+use ORT\Interactive\Couchbase\Relations\MorphMany;
 
 trait HybridRelations
 {
@@ -26,7 +24,7 @@ trait HybridRelations
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'ORT\Interactive\Couchbase\Eloquent\Model')) {
+        if (!is_subclass_of($related, Model::class)) {
             return parent::hasOne($related, $foreignKey, $localKey);
         }
 
@@ -47,20 +45,18 @@ trait HybridRelations
      * @param string $type
      * @param string $id
      * @param string $localKey
-     * @return \Illuminate\Database\Eloquent\Relations\MorphOne
+     * @return \Illuminate\Database\Eloquent\Relations\MorphOne|MorphOne
      */
     public function morphOne($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'ORT\Interactive\Couchbase\Eloquent\Model')) {
+        if (!is_subclass_of($related, Model::class)) {
             return parent::morphOne($related, $name, $type, $id, $localKey);
         }
 
         $instance = new $related;
 
         list($type, $id) = $this->getMorphs($name, $type, $id);
-
-        $table = $instance->getTable();
 
         $localKey = $localKey ?: $this->getKeyName();
 
@@ -78,7 +74,7 @@ trait HybridRelations
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'ORT\Interactive\Couchbase\Eloquent\Model')) {
+        if (!is_subclass_of($related, Model::class)) {
             return parent::hasMany($related, $foreignKey, $localKey);
         }
 
@@ -99,12 +95,12 @@ trait HybridRelations
      * @param string $type
      * @param string $id
      * @param string $localKey
-     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany|MorphMany
      */
     public function morphMany($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'ORT\Interactive\Couchbase\Eloquent\Model')) {
+        if (!is_subclass_of($related, Model::class)) {
             return parent::morphMany($related, $name, $type, $id, $localKey);
         }
 
@@ -143,7 +139,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'ORT\Interactive\Couchbase\Eloquent\Model')) {
+        if (!is_subclass_of($related, Model::class)) {
             return parent::belongsTo($related, $foreignKey, $otherKey, $relation);
         }
 
@@ -214,17 +210,18 @@ trait HybridRelations
     /**
      * Define a many-to-many relationship.
      *
-     * @param  string  $related
-     * @param  string|null  $table
-     * @param  string|null  $foreignPivotKey
-     * @param  string|null  $relatedPivotKey
-     * @param  string|null  $parentKey
-     * @param  string|null  $relatedKey
-     * @param  string|null  $relation
+     * @param string $related
+     * @param string $table
+     * @param string $foreignPivotKey
+     * @param string $relatedPivotKey
+     * @param string $parentKey
+     * @param string $relatedKey
+     * @param string $relation
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function belongsToMany($related, $table = null, $foreignPivotKey = null, $relatedPivotKey = null,
-                                  $parentKey = null, $relatedKey = null, $relation = null)
+    public function belongsToMany($related, $table = null, $foreignPivotKey = null,
+                                  $relatedPivotKey = null, $parentKey = null,
+                                  $relatedKey = null, $relation = null)
     {
         // If no relationship name was passed, we will pull backtraces to get the
         // name of the calling function. We will use that function name as the
@@ -234,7 +231,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, \ORT\Interactive\Couchbase\Eloquent\Model::class)) {
+        if (!is_subclass_of($related, Model::class)) {
             return parent::belongsToMany($related, $table, $foreignPivotKey, $relatedPivotKey, $parentKey, $relatedKey, $relation);
         }
 
@@ -251,7 +248,7 @@ trait HybridRelations
         // models using underscores in alphabetical order. The two model names
         // are transformed to snake case from their default CamelCase also.
         if (is_null($table)) {
-            $table = $this->joiningTable($related, $instance);
+            $table = $this->joiningTable($related);
         }
 
         // Now we're ready to create a new query builder for the related model and

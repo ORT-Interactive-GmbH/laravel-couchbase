@@ -99,26 +99,6 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /**
-     * Shorthand to get the results of the relationship.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function get()
-    {
-        return $this->getResults();
-    }
-
-    /**
-     * Get the number of embedded models.
-     *
-     * @return int
-     */
-    public function count()
-    {
-        return count($this->getEmbedded());
-    }
-
-    /**
      * Attach a model instance to the parent model.
      *
      * @param  \Illuminate\Database\Eloquent\Model $model

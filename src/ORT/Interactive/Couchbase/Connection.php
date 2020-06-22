@@ -462,4 +462,5 @@ class Connection extends \Illuminate\Database\Connection
     {
         return call_user_func_array([$this->bucket, $method], $parameters);
     }
+
 }

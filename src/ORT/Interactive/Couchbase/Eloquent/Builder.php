@@ -4,11 +4,11 @@ namespace ORT\Interactive\Couchbase\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as BaseQueryBuilder;
 use Illuminate\Pagination\Paginator;
 use ORT\Interactive\Couchbase\Query\Builder as QueryBuilder;
-use Illuminate\Database\Query\Builder as BaseQueryBuilder;
 use ORT\Interactive\Couchbase\Query\Grammar;
-use Illuminate\Database\Query\Grammars\Grammar as BaseGrammar;
+use ORT\Interactive\Couchbase\Relations\EmbedsMany;
 
 class Builder extends EloquentBuilder
 {
@@ -346,6 +346,11 @@ class Builder extends EloquentBuilder
         return $results;
     }
 
+    /**
+     * Get the query grammar instance.
+     *
+     * @return Grammar
+     */
     public function getGrammar()
     {
         return $this->query->getGrammar();

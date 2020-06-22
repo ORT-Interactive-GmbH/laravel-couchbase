@@ -101,8 +101,7 @@ class Grammar extends BaseGrammar
             return $value;
         }
 
-        if (self::IDENTIFIER_ENCLOSURE_CHAR === mb_substr($value, 0,
-                1) && self::IDENTIFIER_ENCLOSURE_CHAR === mb_substr($value, -1)) {
+        if (self::IDENTIFIER_ENCLOSURE_CHAR === mb_substr($value, 0, 1) && self::IDENTIFIER_ENCLOSURE_CHAR === mb_substr($value, -1)) {
             if (mb_substr_count($value, self::IDENTIFIER_ENCLOSURE_CHAR) % 2 === 0) {
                 return $value;
             }
