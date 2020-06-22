@@ -48,7 +48,6 @@ php7.2:
   variables:
     DEBIAN_VERSION: 9
     CB_DATABASE: "test-ing"
-    CB_VERSION: 6
   image: php:7.2-stretch
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
@@ -59,7 +58,6 @@ php7.3:
   variables:
     DEBIAN_VERSION: 9
     CB_DATABASE: "test-ing"
-    CB_VERSION: 6
   image: php:7.3-stretch
   script:
     - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml

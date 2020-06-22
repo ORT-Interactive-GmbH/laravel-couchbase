@@ -2,17 +2,7 @@
 
 return [
     'connections' => [
-        'couchbase' => strpos(env('CB_VERSION', '4'), '4') === 0 ? [
-            'name' => 'couchbase',
-            'driver' => 'couchbase',
-            'port' => env('CB_PORT', 8091),
-            'host' => env('CB_HOST', '127.0.0.1'),
-            'bucket' => env('CB_DATABASE', env('CB_BUCKET', 'test-ing')),
-            'user' => env('CB_USER', env('CB_USERNAME')),
-            'password' => env('CB_PASSWORD'),
-            'n1ql_hosts' => ['http://127.0.0.18093'],
-            'inline_parameters' => env('CB_INLINE_PARAMETERS', false),
-        ] : [
+        'couchbase' => [
             'name' => 'couchbase',
             'driver' => 'couchbase',
             'port' => env('CB_PORT', 8093),
@@ -29,7 +19,7 @@ return [
             'name' => 'mysql',
             'driver' => 'mysql',
             'host' => env('MYSQL_HOST', '127.0.0.1'),
-            'database' => env('MYSQL_DATABASE','testing'),
+            'database' => env('MYSQL_DATABASE', 'testing'),
             'username' => env('MYSQL_USER', 'root'),
             'password' => env('MYSQL_PASSWORD', env('MYSQL_ROOT_PASSWORD')),
             'charset' => 'utf8',

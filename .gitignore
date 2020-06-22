@@ -9,3 +9,4 @@ composer.lock
 .idea/
 sql-log.sql
 .env
+test.sh

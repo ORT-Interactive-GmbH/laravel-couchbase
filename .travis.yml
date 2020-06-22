@@ -13,7 +13,6 @@ services:
 
 env:
   CB_BUCKET=test-ing
-  CB_VERSION=4
 
 before_script:
   - set -e
