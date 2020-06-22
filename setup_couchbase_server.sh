@@ -4,7 +4,6 @@ set -e
 
 if [[ $CB_VERSION == 6* ]]; then
 
-
     # Couchbase PHP SDK
     apt-get install -yqq $(apt-cache search libcouchbase | cut -d ' ' -f 1)
     test -f downloads/couchbase-server-enterprise_6.5.1-debian${DEBIAN_VERSION}_amd64.deb || curl --output downloads/couchbase-server-enterprise_6.5.1-debian${DEBIAN_VERSION}_amd64.deb https://packages.couchbase.com/releases/6.5.1/couchbase-server-enterprise_6.5.1-debian${DEBIAN_VERSION}_amd64.deb

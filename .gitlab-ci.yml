@@ -13,15 +13,6 @@ cache:
     - vendor/
     - downloads/
 
-stages:
-  - laravel5.4
-  - laravel5.5
-  - laravel5.6
-  - laravel5.7
-  - laravel5.8
-  - laravel6.0
-  - laravel7.0
-
 before_script:
   - mkdir -p downloads
   - set -e
@@ -50,9 +41,27 @@ before_script:
 
   # Install Composer and project dependencies.
   - curl -sS https://getcomposer.org/installer | php
-  - cat composer.json | sed -e "s/\"^5\\.4\"/\"^${LARAVEL_VERSION}\"/g" > composer2.json; rm composer.json; mv composer2.json composer.json
   - php -d default_socket_timeout=1 -d memory_limit=-1 composer.phar global require hirak/prestissimo --prefer-dist --no-ansi
   - php -d default_socket_timeout=1 -d memory_limit=-1 composer.phar install --no-interaction --prefer-dist --profile -vvv --no-ansi
 
-include:
-  - local: ".gitlab-ci/laravel5.4.yml"
+php7.2:
+  variables:
+    DEBIAN_VERSION: 9
+    CB_DATABASE: "test-ing"
+    CB_VERSION: 6
+  image: php:7.2-stretch
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
+
+php7.3:
+  variables:
+    DEBIAN_VERSION: 9
+    CB_DATABASE: "test-ing"
+    CB_VERSION: 6
+  image: php:7.3-stretch
+  script:
+    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+  tags:
+    - docker
