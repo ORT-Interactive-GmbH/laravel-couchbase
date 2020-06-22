@@ -2,7 +2,7 @@
 
 return [
     'connections' => [
-        [
+        'couchbase' => [
             'name' => 'couchbase',
             'driver' => 'couchbase',
             'port' => env('CB_PORT', 8093),

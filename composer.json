@@ -26,9 +26,8 @@
     "mockery/mockery": "^0.9"
   },
   "autoload": {
-    "psr-0": {
-      "ORT\\Interactive\\Couchbase": "src/",
-      "ORT\\Interactive\\Eloquent": "src/"
+    "psr-4": {
+      "": "src/"
     }
   },
   "autoload-dev": {
