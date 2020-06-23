@@ -5,7 +5,7 @@ use ORT\Interactive\Couchbase\Query\Grammar;
 
 class ArgsParametersTest extends TestCase
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         putenv('CB_INLINE_PARAMETERS=false');
         parent::setUpBeforeClass();

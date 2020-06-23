@@ -2,7 +2,7 @@
 
 class ModelTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         User::truncate();
         Soft::truncate();
@@ -94,7 +94,7 @@ class ModelTest extends TestCase
         $this->assertEquals('customId', $user->_id);
 
         $raw = $user->getAttributes();
-        $this->assertInternalType('string', $raw['_id']);
+        $this->assertIsString($raw['_id']);
     }
 
     public function testManualIntId()
@@ -110,7 +110,7 @@ class ModelTest extends TestCase
         $this->assertEquals('1', $user->_id);
 
         $raw = $user->getAttributes();
-        $this->assertInternalType('string', $raw['_id']);
+        $this->assertIsString($raw['_id']);
     }
 
     public function testDelete()

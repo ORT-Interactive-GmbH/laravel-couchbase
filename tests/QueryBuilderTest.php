@@ -8,7 +8,7 @@ class QueryBuilderTest extends TestCase
     /**
      * @group QueryBuilderTest
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         DB::table('users')->truncate();
         DB::table('items')->truncate();

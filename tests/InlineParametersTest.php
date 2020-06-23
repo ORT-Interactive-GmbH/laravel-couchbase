@@ -5,7 +5,7 @@ use ORT\Interactive\Couchbase\Events\QueryFired;
 
 class InlineParametersTest extends TestCase
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         putenv('CB_INLINE_PARAMETERS=true');
         parent::setUpBeforeClass();

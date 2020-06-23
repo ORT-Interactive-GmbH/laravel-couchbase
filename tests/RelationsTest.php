@@ -5,7 +5,7 @@ class RelationsTest extends TestCase
     /**
      * @group RelationsTest
      */
-    public function tearDown()
+    public function tearDown(): void
     {
         Mockery::close();
 

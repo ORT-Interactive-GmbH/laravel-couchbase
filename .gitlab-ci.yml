@@ -26,9 +26,7 @@ before_script:
   - apt-get update -yqq
 
   # Couchbase Server
-  - echo "Installing CB Server ..."
   - bash setup_couchbase_server.sh
-  - echo "Installing CB Server DONE"
 
   # Install php extensions
   - docker-php-ext-install pdo_mysql json zip #mbstring mcrypt curl intl gd xml bz2 opcache
@@ -41,8 +39,8 @@ before_script:
 
   # Install Composer and project dependencies.
   - curl -sS https://getcomposer.org/installer | php
-  - php -d default_socket_timeout=1 -d memory_limit=-1 composer.phar global require hirak/prestissimo --prefer-dist --no-ansi
-  - php -d default_socket_timeout=1 -d memory_limit=-1 composer.phar install --no-interaction --prefer-dist --profile -vvv --no-ansi
+  - php -d default_socket_timeout=1 -d memory_limit=-1 composer.phar global require hirak/prestissimo --no-interaction --prefer-dist --no-ansi
+  - php -d default_socket_timeout=1 -d memory_limit=-1 composer.phar install --no-interaction --prefer-dist --no-ansi
 
 php7.2:
   variables:
@@ -50,7 +48,7 @@ php7.2:
     CB_DATABASE: "test-ing"
   image: php:7.2-stretch
   script:
-    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+    - php vendor/bin/phpunit --colors=never
   tags:
     - docker
 
@@ -60,6 +58,6 @@ php7.3:
     CB_DATABASE: "test-ing"
   image: php:7.3-stretch
   script:
-    - php vendor/bin/phpunit --coverage-text --colors=never --coverage-clover=coverage.xml
+    - php vendor/bin/phpunit --colors=never
   tags:
     - docker
