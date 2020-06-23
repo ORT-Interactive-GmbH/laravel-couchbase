@@ -76,7 +76,7 @@ class EmbedsOne extends EmbedsOneOrMany
         }
 
         // Use array dot notation for better update behavior.
-        $values = array_dot($model->getDirty(), $this->localKey . '.');
+        $values = \Arr::dot($model->getDirty(), $this->localKey . '.');
 
         $result = $this->getBaseQuery()->update($values);
 

@@ -690,7 +690,7 @@ class QueryBuilderTest extends TestCase
      */
     private function queryToSql(Query $query)
     {
-        return str_replace_array('?', array_map(function ($value) {
+        return \Str::replaceArray('?', array_map(function ($value) {
             return Grammar::wrapData($value);
         }, $query->getBindings()), $query->toSql());
     }
