@@ -310,11 +310,12 @@ class Connection extends \Illuminate\Database\Connection
      * Begin a fluent query against documents with given type.
      *
      * @param  string $table
+     * @param  string|null  $as
      * @return Query\Builder
      */
-    public function table($table)
+    public function table($table, $as = null)
     {
-        return $this->builder($table);
+        return $this->query()->from($table);
     }
 
     /**

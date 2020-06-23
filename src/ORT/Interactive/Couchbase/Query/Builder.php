@@ -244,9 +244,10 @@ class Builder extends BaseBuilder
      * Set the table which the query is targeting.
      *
      * @param  string $type
+     * @param  string|null  $as
      * @return $this
      */
-    public function from($type)
+    public function from($type, $as = null)
     {
         $this->from = $this->connection->getBucketName();
         $this->type = $type;

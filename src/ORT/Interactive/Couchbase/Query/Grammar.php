@@ -291,7 +291,7 @@ class Grammar extends BaseGrammar
     {
         $values = $this->parameterize($where['values'] ?? []);
 
-        $colIdentifier = str_random(32);
+        $colIdentifier = \Str::random(32);
         return 'ANY ' .
             $this->wrapValue($colIdentifier) .
             ' IN ' .
@@ -359,7 +359,7 @@ class Grammar extends BaseGrammar
                     ' = ' .
                     $this->wrapData($value) .
                     ' FOR ' .
-                    $this->wrap(str_singular($forIn['alias'])) .
+                    $this->wrap(\Str::singular($forIn['alias'])) .
                     ' IN ' .
                     $this->wrap($forIn['alias']) .
                     ' WHEN ' .
