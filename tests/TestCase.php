@@ -30,7 +30,8 @@ class TestCase extends Orchestra\Testbench\TestCase
         //$app['path.base'] = __DIR__ . '/../src';
 
         try {
-            Dotenv\Dotenv::create([realpath(__DIR__ . '/../')], '.env')->load();
+            $dotenv = Dotenv\Dotenv::createImmutable(realpath(__DIR__ . '/../'));
+            $dotenv->load();
         } catch (Exception $e) {
             // ignore
         }
